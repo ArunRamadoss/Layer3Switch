@@ -1,0 +1,15 @@
+How ?
+------
+UDP sockets   <-> MGR <-> UDP Sockets
+
+1) MGR runs on PF_PACKET to Rx all packets on from the PC
+
+2) UDP sockets for the instance
+
+3) Sever port is 9000
+
+4) instacne port is 9000 + inst_number -> get the inst_number from command promt
+
+5) Use lo interface to the MGR dont go for other interface
+
+6) Need to trap the packets going to back to system .. is there any sock provides it i guess yes?

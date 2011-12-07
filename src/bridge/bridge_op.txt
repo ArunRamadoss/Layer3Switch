@@ -1,0 +1,8 @@
+IEEE 802.1D
+-----------
+7.1 Bridge operation
+   The principal elements of Bridge operation are as follows:
+  a)    Relay and filtering of frames.
+  b)    Maintenance of the information required to make frame filtering and relaying decisions.
+  c)    Management of the above.
+

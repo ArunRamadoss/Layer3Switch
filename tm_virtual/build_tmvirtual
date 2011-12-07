@@ -1,0 +1,23 @@
+#!/bin/sh
+
+export CODE_DIR=$PWD
+export FINAL_OBJ=$PWD/obj/
+
+cd ${CODE_DIR}/TechMindsLib
+./tmlib_build $1
+cd -
+
+if [ "$1" = "" ]; then
+	echo "Building TM Virtual Lib"
+	make -C CLI
+	make -C .
+else
+	echo "Cleaning SIM Lib"
+	make -C CLI $1
+	make $1 -C .
+fi
+if [ $? = 0 ]; then
+	echo "Sucessfully Done"
+else
+	echo "Build Failure"
+fi

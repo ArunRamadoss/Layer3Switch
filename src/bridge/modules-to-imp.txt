@@ -1,0 +1,52 @@
+bridgeCompliance1493 MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for device support of bridging
+        services, as per RFC1493."
+
+    MODULE
+        MANDATORY-GROUPS {
+            dot1dBaseBridgeGroup,
+            dot1dBasePortGroup
+        }
+
+    GROUP   dot1dStpBridgeGroup
+    DESCRIPTION
+        "Implementation of this group is mandatory for bridges
+        that support the Spanning Tree Protocol."
+
+    GROUP   dot1dStpPortGroup
+    DESCRIPTION
+        "Implementation of this group is mandatory for bridges
+        that support the Spanning Tree Protocol."
+
+    GROUP   dot1dTpBridgeGroup
+    DESCRIPTION
+        "Implementation of this group is mandatory for bridges
+        that support the transparent bridging mode.  A
+        transparent or SRT bridge will implement this group."
+
+    GROUP   dot1dTpFdbGroup
+    DESCRIPTION
+        "Implementation of this group is mandatory for bridges
+        that support the transparent bridging mode.  A
+        transparent or SRT bridge will implement this group."
+
+    GROUP   dot1dTpGroup
+    DESCRIPTION
+        "Implementation of this group is mandatory for bridges
+
+
+
+        that support the transparent bridging mode.  A
+        transparent or SRT bridge will implement this group."
+
+    GROUP   dot1dStaticGroup
+    DESCRIPTION
+        "Implementation of this group is optional."
+
+    GROUP dot1dNotificationGroup
+    DESCRIPTION
+        "Implementation of this group is optional."
+    ::= { dot1dCompliances 1 }
+
