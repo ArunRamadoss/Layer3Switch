@@ -91,7 +91,7 @@ int create_user (char *username, char *password, int priv_level)
 	return -1;
 }
 
-static int inline update_user_info (char *username, char *password, int priv_level)
+int update_user_info (char *username, char *password, int priv_level)
 {
 
 	struct user_db * p = NULL;
@@ -104,7 +104,7 @@ static int inline update_user_info (char *username, char *password, int priv_lev
 			p->priv_level = priv_level;
 	}
 
-	strncpy (userdb[i].password, password, MAX_USER_PASSWORD);
+	strncpy (p->password, password, MAX_USER_PASSWORD);
 
 	return 0;
 }
@@ -120,7 +120,7 @@ int password_validation (char *pswd)
 		return -1;
 
 	do {
-		c = *pswd
+		c = *pswd;
 		if (isspace (c))
 			return -1;
 		if (!is_u && isupper (c))
@@ -173,7 +173,7 @@ int show_users (void)
 	while (++i < MAX_USERS) {
 		if (userdb[i].status)
 			cliprint (" %-16s   %-16s    %4d\n",
-				user_db[i].user_name, "******", userdb[i].priv_level);
+				userdb[i].user_name, "******", userdb[i].priv_level);
 	}
 	return 0;
 }
