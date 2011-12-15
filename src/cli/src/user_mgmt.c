@@ -168,11 +168,11 @@ char * decrypt_password (char *password)
 int show_users (void)
 {
 	int  i = -1;
-	cliprint (" %-16s   %-16s    %-16s\n","Username","Password","Level");
-	cliprint (" %-16s   %-16s    %-16s\n","--------","--------", "--------");
+	printf (" %-16s   %-16s    %-16s\n","Username","Password","Level");
+	printf (" %-16s   %-16s    %-16s\n","--------","--------", "--------");
 	while (++i < MAX_USERS) {
 		if (userdb[i].status)
-			cliprint (" %-16s   %-16s    %4d\n",
+			printf (" %-16s   %-16s    %4d\n",
 				userdb[i].user_name, "******", userdb[i].priv_level);
 	}
 	return 0;

@@ -68,10 +68,10 @@ static void	bstp_decode_bpdu(struct bstp_port *, struct bstp_cbpdu *,
 static void	bstp_send_bpdu(struct bstp_state *, struct bstp_port *,
 		    struct bstp_cbpdu *);
 static int	bstp_pdu_flags(struct bstp_port *);
-static void	bstp_received_stp(struct bstp_state *, struct bstp_port *,
-		    uint8_t *, struct bstp_tbpdu *);
-static void	bstp_received_rstp(struct bstp_state *, struct bstp_port *,
-		    uint8_t *, struct bstp_tbpdu *);
+
+static void bstp_received_stp(struct bstp_state *bs, struct bstp_port *bp, struct bstp_tbpdu *tpdu);
+static void	
+bstp_received_rstp(struct bstp_state *bs, struct bstp_port *bp, struct bstp_tbpdu *tpdu);
 static void	bstp_received_tcn(struct bstp_state *, struct bstp_port *,
 		    struct bstp_tcn_unit *);
 static void	bstp_received_bpdu(struct bstp_state *, struct bstp_port *,
@@ -390,9 +390,12 @@ bstp_pdu_flags(struct bstp_port *bp)
 
 int rstp_process_bpdu (struct bstp_tbpdu *tpdu, uint16_t ifp)
 {
-	struct bstp_port *bp = rstp_get_port_info (ifp);
+	struct bstp_port *bp = NULL;
 	struct bstp_state *bs = NULL;
 
+#if 0
+	bp = rstp_get_port_info (ifp);
+#endif
 	if (!bp)
 		return -1;
 
@@ -432,7 +435,7 @@ int rstp_process_bpdu (struct bstp_tbpdu *tpdu, uint16_t ifp)
 			break;
 
 		case BSTP_PROTO_RSTP:
-			bstp_received_rstp(bs, bp, &m, tpdu);
+			bstp_received_rstp(bs, bp, tpdu);
 			break;
 	}
 out:

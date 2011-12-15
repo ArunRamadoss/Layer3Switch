@@ -96,3 +96,12 @@ int read_port_mac_address (int port, char *p)
 	p[5] = (uint8_t)port + 1;
 	return 0;
 }
+hash_walk ()
+{
+}
+
+show_uptime ()
+{
+
+}
+
