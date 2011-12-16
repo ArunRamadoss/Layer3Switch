@@ -4,7 +4,7 @@
 #(LINUX,WINDOWS,NONE) /*define OS your are Running */  /*Windows not supported now*/
 TARGET_OS = LINUX
 #(SFS, NORMAL)
-SCHED = SFS
+SCHED = NORMAL
 
 ifeq ($(TARGET_OS), LINUX)
 COMPILATION_SWITCH += -DLINUX_WANTED

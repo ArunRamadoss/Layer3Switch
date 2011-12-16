@@ -274,13 +274,15 @@ int add_input_to_the_cmd(char c,char *tmp)
 	int rval = 0;
 	switch(c) {
 		case '\n': 
-			if(!tmp[0]) 
-				rval = 1;
-			else  {
+			if(tmp[0]) 
+			{
 				strncat(tmp, "\0", 1);
 				parse_and_execute(tmp);
+				fflush (stdout);
 				memset(tmp, 0, MAX_CMD_NAME);
+
 			}
+			rval = 1;
 			break;
 		default: strncat(tmp, &c, 1);
 			 break;
@@ -292,11 +294,13 @@ print_prompt ()
 {
 	write(gfd, this_cli[this_session].prmpt, 
 			strlen(this_cli[this_session].prmpt));
+	fflush (stdout);
 }
 
 int write_input_on_screen(char c)
 {
 	write(gfd,&c,1);
+	fflush (stdout);
 }
 
 void write_string (char *str)

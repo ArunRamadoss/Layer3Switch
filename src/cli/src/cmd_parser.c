@@ -431,3 +431,11 @@ int handle_tab (char *line)
 	handle_help (line, 1);
 	is_help = 0;
 }
+
+sync_unlock ()
+{
+
+}
+
+sync_lock() {}
+create_sync_lock (){}

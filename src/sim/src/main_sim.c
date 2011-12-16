@@ -69,17 +69,18 @@ int main (int argc, char **argv)
 
 	cli_init ("Switch");
 
-	bridge_init ();
-
 	port_init ();
 
+	bridge_init ();
+
 	spawn_pkt_processing_task ();
+
+	start_cli_task ();
 
 	set_curr_mode (USER_EXEC_MODE);
 
         install_cmd_handler ("uptime", "Displays the uptime", show_uptime, NULL, USER_EXEC_MODE);
 
-	start_cli_task ();
 
 	while (1) {
 		sleep_forever ();

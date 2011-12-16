@@ -84,6 +84,7 @@ int create_user (char *username, char *password, int priv_level)
 				userdb[i].priv_level = priv_level;
 			else 
 				userdb[i].priv_level = 5;
+			userdb[i].status  = 1;
 			return 0;
 		}
 	}
@@ -131,7 +132,7 @@ int password_validation (char *pswd)
 			is_d = 1;
 		pswd++;
 
-	} while (pswd);
+	} while (*pswd);
 
 	if (is_d && is_l && is_u)
 		return 0;
