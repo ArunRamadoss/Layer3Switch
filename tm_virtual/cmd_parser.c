@@ -1,18 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "defs.h"
 #include "rbtree.h"
 #include "list.h"
 #include "cmd.h"
 
 #define  MAX_TOKENS 32
 
-enum {
-	EXACT_MATCH = 0x1,
-	MATCH = 0x2,
-	NO_MATCH = 0x0
-};
 /*XXX: remove the repeated code*/
 
 extern struct rb_root   cmd_root; 
@@ -30,9 +24,9 @@ char *cli_error[] = {
 char * check_alias (char *cmd);
 void print_cmd_helpstring (cmdnode_t *cmd);
 cmdnode_t * search_command (char *cmd, char * (*args)[10], int *error_code);
-static inline int build_token (char *cmd, char * (*)[10]);
+static inline void build_token (char *cmd, char * (*)[10]);
 void execute_cmd (cmdnode_t *cmd, char *args[]);
-int  do_auto_complete (char *cmd, char *line, int len, int , int);
+void do_auto_complete (char *cmd, char *line);
 
 extern int is_help;
 
@@ -42,7 +36,6 @@ int parse_and_execute (char *line)
 	char * args [MAX_TOKENS];
 	cmdnode_t *cmd_node = NULL;
 	int error_code = -1;
-	int mode = 0;
 
 	if (!(cmd = check_alias (line))) {
 		cmd = line;
@@ -53,9 +46,7 @@ int parse_and_execute (char *line)
 		return -1;
 	}
 
-	mode = (cmd_node->priv_mode & 0xFFFFFF00);
-
-	if (!(mode & get_curr_mode ())) {
+	if (!(get_curr_priv_level () & cmd_node->priv_mode)) {
 		write_string (cli_error[ERR_INVALID_COMMAND]);
 		return 0;
 	}
@@ -83,7 +74,6 @@ cmdnode_t *command_lookup (char *command, char * (*args)[10], int *error_code)
 	int nref = 0;
 	char * token[MAX_TOKENS];
 	char tmp[MAX_CMD_NAME];
-	int rval = 0;
 	cmd_t  *p = cmd_tree_walk (&cmd_root, key);
 
 	if (!p) {
@@ -104,20 +94,13 @@ cmdnode_t *command_lookup (char *command, char * (*args)[10], int *error_code)
 
 		cmd= list_entry (pnode, cmdnode_t, np);
 
-		rval = match_command (cmd, token, args);
-		if (rval == EXACT_MATCH) {
-			nref = 1;
-			match = cmd;
-			break;
-		} else if (rval == MATCH){
+		if (match_command (cmd, token, args)) {
 			++nref;
 			match = cmd;
-		} else 
-			continue;
+		}
 	}
 	if (nref == 1) {
-		int mode = (match->priv_mode & 0xFFFFFF00);
-		if (mode & get_curr_mode ())
+		if (match->priv_mode & get_curr_priv_level ())
 			return match;
 		else {
 			*error_code = ERR_INVALID_COMMAND;
@@ -150,7 +133,6 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 	char parse_cmd[MAX_CMD_NAME];
 	int i = 0;
 	int j = 0;
-	int xctm = -1;
 
 	if (!cmd || !token) 
 		return 0;
@@ -159,10 +141,7 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 
 	memset (parse_cmd, 0, MAX_CMD_NAME);
 
-	if (strlen(cmd->syntax))
-		memcpy (parse_cmd, cmd->syntax, strlen(cmd->syntax) + 1);
-	else
-		memcpy (parse_cmd, cmd->cmd, strlen(cmd->cmd) + 1);
+	memcpy (parse_cmd, cmd->cmd, strlen(cmd->cmd) + 1);
 
 	next = strtok (parse_cmd, " ");
 
@@ -179,9 +158,9 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 		if ((*cmd_tokens[i]) == '<') {
 			if (args)
 				(*args)[j++] = token[i];
-			if (!validate_input_param (token[i], cmd_tokens[i] + 1))
-				return 0;
 			i++;
+			if (!validate_input_param (token[i], cmd_tokens[i]))
+				return 0;
 			continue;
 		} else if (!strncmp (cmd_tokens[i], token[i], 
 					strlen (token[i]))) {
@@ -191,36 +170,24 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 	}
 
 	if (!cmd_tokens[i] && token[i])
-		return NO_MATCH;
+		return 0;
 	else if (cmd_tokens[i] && !is_help) 
-		return NO_MATCH;
-	else if (strlen (cmd_tokens[i-1]) == strlen (token[i-1]))
-		return EXACT_MATCH;
+		return 0;
 	else 
-		return MATCH;
+		return 1;
 }
 
 int validate_input_param (char *itoken, char *otoken)
 {
-	if (!strncmp (otoken, "INT", sizeof("INT"))){
-		while (*itoken) {
-			if (isalpha (*itoken))
-				return 0;
-			itoken++;
-		}
-	}
-	if (!strncmp (otoken, "STR", sizeof("STR"))){
-		return 1;
-	}
 	return 1;
 }
 
-static inline int build_token (char *cmd, char * (*token)[10])
+static inline void build_token (char *cmd, char * (*token)[10])
 {
 	char *next = NULL;
 	int i = 0;
 	if (!cmd || !token) 
-		return -1;
+		return;
 
 	next = strtok (cmd, " ");
 
@@ -229,22 +196,15 @@ static inline int build_token (char *cmd, char * (*token)[10])
 		i++;
 		next = strtok (NULL, " ");
 	}
-	if (i)
-		return i;
-	else
-		return -1;
+	return;
 }
 
 cmd_t * cmd_tree_walk (struct rb_root  *cmd_root, unsigned int key)
 {
-	struct rb_node **p = NULL;
+	struct rb_node **p = &cmd_root->rb_node;
 	struct rb_node *parent = NULL;
 	cmd_t * cmd = NULL;
 	unsigned int cmp = 0;
-
-	sync_lock (&cmd_root->lock);
-
-	p = &cmd_root->rb_node;
 
 	while (*p) {
 
@@ -257,33 +217,23 @@ cmd_t * cmd_tree_walk (struct rb_root  *cmd_root, unsigned int key)
 			p = &(*p)->rb_left;
 		else if (key > cmp) 
 			p = &(*p)->rb_right;
-		else {
-			sync_unlock (&cmd_root->lock);
+		else 
 			return cmd;
-		}
 	}
-
-	sync_unlock (&cmd_root->lock);
 	return NULL;
 }
 
 void cmd_del (cmd_t *n, struct rb_root *root)
 {
-	sync_lock (&root->lock);
 	rb_erase (&n->rlist, root);
-	sync_unlock (&root->lock);
 }
 
 void cmd_add (cmd_t *n, struct rb_root *root)
 {
 	unsigned int key = n->start_char;
-	struct rb_node **link = NULL;
+	struct rb_node **link = &root->rb_node;
 	struct rb_node *parent = NULL;
 	cmd_t  *x = NULL;
-
-	sync_lock (&root->lock);
-
-	link = &root->rb_node;
 
 	while (*link) {
 
@@ -299,8 +249,6 @@ void cmd_add (cmd_t *n, struct rb_root *root)
 
 	rb_link_node(&n->rlist, parent, link);
 	rb_insert_color(&n->rlist, root);
-
-	sync_unlock (&root->lock);
 }
 
 int  handle_help (char *line, int is_tab)
@@ -316,9 +264,6 @@ int  handle_help (char *line, int is_tab)
 	int flag = 0;
 	cmdnode_t * match = NULL;
 	int iref = 0;
-	int mode = 0;
-	int last_token = 0;
-	int rval = -1;
 
 	memset (tokens, 0, sizeof(tokens));
 
@@ -327,7 +272,7 @@ int  handle_help (char *line, int is_tab)
 	}
 	memcpy (parse_cmd, command,  strlen(command) + 1);
 
-	last_token = build_token (parse_cmd, &tokens) - 1;
+	build_token (parse_cmd, &tokens);
 
 	p = cmd_tree_walk (&cmd_root, key);
 
@@ -351,17 +296,10 @@ int  handle_help (char *line, int is_tab)
 
 			cmdnode_t *cmd= list_entry (pnode, cmdnode_t, np);
 
-			if (!tokens[0] || (rval = match_command (cmd, tokens, NULL))) {
-				if (rval == NO_MATCH)
-					continue;
-				mode = (cmd->priv_mode & 0xFFFFFF00);
-				if (mode & get_curr_mode ()) {
+			if (!tokens[0] || match_command (cmd, tokens, NULL)) {
+				if (get_curr_priv_level () & cmd->priv_mode) {
 					if (is_tab) {
 						iref++;
-						if (rval == EXACT_MATCH) {
-							match = cmd;
-							goto autocomplete;
-						}
 						if (iref == 1) {
 							match = cmd;
 							continue;
@@ -385,44 +323,31 @@ int  handle_help (char *line, int is_tab)
 
 	return 0;
 autocomplete:
-	rval = do_auto_complete (match->cmd, line, strlen(tokens[last_token]), last_token, iref);
-	if (rval && iref == 1)
-		print_cmd_helpstring (match);
+	memcpy (parse_cmd, match->cmd,  strlen(match->cmd) + 1);
+	do_auto_complete (parse_cmd, line);
 	return 0;
 }
 
-int  do_auto_complete (char *cmd, char *line, int len, int last_t, int nref)
+void do_auto_complete (char *cmd, char *line)
 {
-	char * tokens[MAX_TOKENS];
-	char parse_cmd[MAX_CMD_NAME];
-	int offset = 0;
+	int i = 0;
+	int syn = 0;
 
-	memset (parse_cmd, 0, MAX_CMD_NAME);
-	memset (tokens, 0, sizeof(tokens));
-
-	memcpy (parse_cmd, cmd,  strlen(cmd) + 1);
-
-	build_token (parse_cmd, &tokens);
-
-	offset = strlen(line) - len - 1;
-	if ((!strncmp (line + offset, tokens[last_t], strlen(tokens[last_t]))) 
-             || (*tokens[last_t] == '<')) {
-		last_t++;
-		offset = strlen (line);
+	for  (; cmd[i] ; i++) {
+		if (cmd[i] == '<') {
+			syn = 1;
+			continue;
+		} else if (cmd[i] == '>') {
+			syn = 0;
+			continue;
+		}
+		line[i] = cmd[i];
 	}
-	else  
-		offset = strlen (line) - len;
-
-	if (tokens[last_t] && *tokens[last_t] != '<') {
-		strcpy (line + offset, tokens[last_t]);
-		strcat  (line, " ");
-	}
-	return 1;
 }
 
 void print_cmd_helpstring (cmdnode_t *cmd)
 {
-	printf ("   %-48s   %-64s\n",cmd->cmd, cmd->helpstring);
+	printf ("    %-30s %-30s\n",cmd->cmd, cmd->helpstring);
 }
 
 int handle_tab (char *line)

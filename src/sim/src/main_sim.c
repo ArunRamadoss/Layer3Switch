@@ -63,24 +63,25 @@ int main (int argc, char **argv)
 
 	parse_cmdline (argc, argv);
 
-	switch_mac[4] = atoi (argv[1]);
+	switch_mac[5] = atoi (argv[1]);
 
 	tmlib_init ();
 
 	cli_init ("Switch");
 
+	spawn_pkt_processing_task ();
+
 	port_init ();
 
 	bridge_init ();
 
-	spawn_pkt_processing_task ();
 
-	start_cli_task ();
 
 	set_curr_mode (USER_EXEC_MODE);
 
         install_cmd_handler ("uptime", "Displays the uptime", show_uptime, NULL, USER_EXEC_MODE);
 
+	start_cli_task ();
 
 	while (1) {
 		sleep_forever ();
@@ -97,12 +98,3 @@ int read_port_mac_address (int port, char *p)
 	p[5] = (uint8_t)port + 1;
 	return 0;
 }
-hash_walk ()
-{
-}
-
-show_uptime ()
-{
-
-}
-

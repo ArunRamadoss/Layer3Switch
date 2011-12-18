@@ -3,10 +3,6 @@
 export CODE_DIR=$PWD
 export FINAL_OBJ=$PWD/build/obj/
 
-cd ${CODE_DIR}/TechMindsLib
-./tmlib_build $1
-cd -
-
 if [ "$1" = "" ]; then
 	echo "Building SIM Lib"
 	make -C ./build

@@ -183,10 +183,6 @@ int stp_process_bpdu (STP_BPDU_T *bpdu, uint16_t port)
 
 	if (bpdu->type == BPDU_CONFIG_TYPE) {
 
-		const unsigned char *buf = bpdu;
-
-                bpdu->port_id = (buf[22] << 8) | buf[23];
-
 		if (!validate_config_bpdu (bpdu)) {
 			debug_stp ("BPDU is malformed\n");
 			return -1;
@@ -316,7 +312,7 @@ void stp_transmit_config(struct stp_port_entry *p)
 	STP_BPDU_T bpdu;
 	struct stp_instance *br;
 
-	if (timer_pending(&p->hold_timer)) {
+	if (timer_pending(p->hold_timer)) {
 		p->config_pending = 1;
 		return;
 	}

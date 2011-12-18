@@ -40,12 +40,12 @@ int vlan_create_default_vlan (int vlan_id)
 	if (vlan_create_vlan (vlan_id)  < 0) {
 		return -1;
 	}
-		
-	vlan_spanning_tree_enable_on_vlan (vlan_id, MODE_STP);
 
 	for (i = 0; i < MAX_PORTS ; i++) {
 		vlan_add_port (vlan_id, i + 1,TAGGED);
 	}
+
+	vlan_spanning_tree_enable_on_vlan (vlan_id, MODE_STP);
 
 	return 0;
 }

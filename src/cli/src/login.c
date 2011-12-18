@@ -69,7 +69,6 @@ login:
 		read_username_password (user, 1);
 		write_string ("\nPassword:");
 		read_username_password (pword, 0);
-
 		if (validate_username_password (user, pword)  < 0) {
 			write_string ("\nIncorrect Login, Please try again");
 			u1count++;

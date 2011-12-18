@@ -36,7 +36,10 @@ struct user_db * get_user_info (char *username)
 	int i = MAX_USERS;
 
 	if (!username || !username[0]) 
-		return -1;
+		return NULL;
+
+	if (!strlen (username))
+		return NULL;
 
 	while (i--) {
 		if (userdb[i].status && 
