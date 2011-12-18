@@ -120,8 +120,9 @@ static int	bstp_addr_cmp(const uint8_t *, const uint8_t *);
 static int	bstp_same_bridgeid(uint64_t, uint64_t);
 static void	bstp_reinit(struct bstp_state *);
 
-struct list_head bstp_list;
+LIST_HEAD(bstp_list);
 static int	bstp_list_mtx;
+struct bstp_state rstp_global_instance;
 
 
 static void
@@ -1995,8 +1996,41 @@ bstp_reinit(struct bstp_state *bs)
 #endif
 }
 
+int rstp_create_instance (uint16_t vlan_id, struct bstp_state **p)
+{
+	struct bstp_state  *new = NULL, *pinst = NULL;
+
+	list_for_each_entry(pinst, &bstp_list, bs_list) {
+		if (pinst->vlan_id == vlan_id) {
+			*p = pinst;
+			return 0;
+		}
+	}
+
+	if (vlan_id == VLAN_INVALID_ID) {
+		new = &rstp_global_instance;
+	} else {
+		new = tm_malloc (sizeof(struct bstp_state));
+		if (!new) {
+			printf ("RSTP Instance Creation failed\n");
+			return -1;
+		}
+        }
+	
+	bstp_attach (new, NULL, vlan_id);
+
+	*p = new;
+
+	mtx_lock(&bstp_list_mtx);
+	list_add_tail(&new->bs_list, &bstp_list);
+	mtx_unlock(&bstp_list_mtx);
+	
+	return 0;
+}
+
+
 void
-bstp_attach(struct bstp_state *bs, struct bstp_cb_ops *cb)
+bstp_attach(struct bstp_state *bs, struct bstp_cb_ops *cb, uint16_t vlan_id)
 {
 	BSTP_LOCK_INIT(bs);
 #if 0
@@ -2012,16 +2046,17 @@ bstp_attach(struct bstp_state *bs, struct bstp_cb_ops *cb)
 	bs->bs_migration_delay = BSTP_DEFAULT_MIGRATE_DELAY;
 	bs->bs_txholdcount = BSTP_DEFAULT_HOLD_COUNT;
 	bs->bs_protover = BSTP_PROTO_RSTP;
-	bs->bs_state_cb = cb->bcb_state;
-	bs->bs_rtage_cb = cb->bcb_rtage;
+	if (cb) {
+		bs->bs_state_cb = cb->bcb_state;
+		bs->bs_rtage_cb = cb->bcb_rtage;
+	}
+	bs->vlan_id = vlan_id;
 
 #if 0
 	getmicrotime(&bs->bs_last_tc_time);
 
 #endif
-	mtx_lock(&bstp_list_mtx);
-	list_add_tail(&bs->bs_list, &bstp_list);
-	mtx_unlock(&bstp_list_mtx);
+	bstp_init (bs);
 }
 
 void
@@ -2063,6 +2098,18 @@ bstp_stop(struct bstp_state *bs)
 	callout_stop(&bs->bs_bstpcallout);
 #endif
 	BSTP_UNLOCK(bs);
+}
+
+int  rstp_create_port (struct bstp_state *bs, int port) 
+{
+	struct  bstp_port *bp = NULL;
+	
+	bp = malloc (sizeof (struct bstp_port));
+
+	if (!bp)
+		return -1;
+
+	return bstp_create (bs,  bp, port);
 }
 
 int

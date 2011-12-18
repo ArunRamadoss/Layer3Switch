@@ -35,9 +35,12 @@ int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 		stp_set_state (p->stp_instance, 1);
 
 	} else if (mode == MODE_RSTP) {
-#if 0
-		p->rstp_instance = rstp8021w_stpm_create (vlan_id);
-#endif
+
+		if (rstp_create_instance (vlan_id, &p->stp_instance) < 0) {
+			debug_vlan ("Unable to enable STP on vlan %d\n", vlan_id);
+			return -1;
+		}
+
 
 		if (!p->rstp_instance) {
 			debug_vlan ("Unable to enable RSTP on vlan %d\n", vlan_id);
@@ -48,15 +51,9 @@ int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 			int res = 0;
 			IS_PORT_SET_PORT_LIST (p->egress_ports, i,res);
 			if (res) {
-#if 0
-				rstp8021w_port_create (p->rstp_instance, i);
-#endif
+				rstp_create_port (p->rstp_instance, i);
 			}
 		}	
-#if 0
-
-		rstp8021w_stpm_enable (p->rstp_instance, STP_ENABLED);
-#endif
 
 		if (p->stp_instance) {
 			stp_set_state (p->stp_instance, 0);

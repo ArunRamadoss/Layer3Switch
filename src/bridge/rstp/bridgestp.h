@@ -332,6 +332,7 @@ struct bstp_port {
  */
 struct bstp_state {
 	struct list_head	bs_list;
+	uint16_t                vlan_id;
 	uint8_t			bs_running;
 	int		bs_mtx;
 	struct bstp_pri_vector	bs_bridge_pv;
@@ -377,7 +378,8 @@ extern const uint8_t bstp_etheraddr[];
 
 extern	void (*bstp_linkstate_p)(uint16_t ifp, int state);
 
-void	bstp_attach(struct bstp_state *, struct bstp_cb_ops *);
+void
+bstp_attach(struct bstp_state *bs, struct bstp_cb_ops *cb, uint16_t vlan_id);
 void	bstp_detach(struct bstp_state *);
 void	bstp_init(struct bstp_state *);
 void	bstp_stop(struct bstp_state *);
