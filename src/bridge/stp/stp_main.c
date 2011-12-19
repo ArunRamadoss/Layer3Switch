@@ -329,7 +329,7 @@ void stp_transmit_config(struct stp_port_entry *p)
 		bpdu.message_age = 0;
 	else {
 		struct stp_port_entry *root = stp_get_port(br, br->root_port);
-		int rmt = timer_get_remaining_time (root->message_age_timer);
+		int rmt = (timer_get_remaining_time (root->message_age_timer)) / tm_get_ticks_per_second ();
 		bpdu.message_age = br->max_age - rmt + MESSAGE_AGE_INCR;
 	}
 	bpdu.max_age = br->max_age;

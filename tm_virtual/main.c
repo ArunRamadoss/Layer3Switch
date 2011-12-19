@@ -196,8 +196,8 @@ int process_pkt (char *buf, int len)
 
 	pkt_hdr = (inst_t *)buf;
 
-#ifndef DBG
-	printf ("Pakcet Rx'd of len %d from inst %d on port %d\n", len, pkt_hdr->inst, pkt_hdr->port);
+#ifdef DBG
+	printf ("Pakcet Rx'd of len %d from inst %d on port %d\n\n", len, pkt_hdr->inst, pkt_hdr->port);
 #endif
 
 	list_for_each_safe (p, n, &vlink) {
