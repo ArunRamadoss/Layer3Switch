@@ -302,9 +302,9 @@ void stp_become_root_bridge(struct stp_instance *br)
 	br->hello_time = br->bridge_hello_time;
 	br->forward_delay = br->bridge_forward_delay;
 	stp_topology_change_detection(br);
-	del_timer(&br->tcn_timer);
+	del_timer(br->tcn_timer);
 	stp_config_bpdu_generation(br);
-	mod_timer(&br->hello_timer, br->hello_time);
+	mod_timer(br->hello_timer, br->hello_time);
 }
 
 void stp_transmit_config(struct stp_port_entry *p)
@@ -342,7 +342,7 @@ void stp_transmit_config(struct stp_port_entry *p)
 		p->config_pending = 0;
 /*FIXME*/
 #define BR_HOLD_TIME 1
-		mod_timer(&p->hold_timer, BR_HOLD_TIME);
+		mod_timer(p->hold_timer, BR_HOLD_TIME);
 	}
 }
 
@@ -353,7 +353,7 @@ static inline void stp_record_config_information(struct stp_port_entry *p,
 	p->designated_cost = bpdu->root_path_cost;
 	p->designated_bridge = bpdu->bridge_id;
 	p->designated_port = bpdu->port_id;
-	mod_timer(&p->message_age_timer, (p->br->max_age - bpdu->message_age));
+	mod_timer(p->message_age_timer, (p->br->max_age - bpdu->message_age));
 }
 
 static inline void stp_record_config_timeout_values(struct stp_instance *br,
@@ -444,7 +444,7 @@ static int stp_supersedes_port_info(struct stp_port_entry *p, STP_BPDU_T *bpdu)
 static inline void stp_topology_change_acknowledged(struct stp_instance *br)
 {
 	br->topology_change_detected = 0;
-	del_timer(&br->tcn_timer);
+	del_timer(br->tcn_timer);
 }
 
 void stp_topology_change_detection(struct stp_instance *br)
@@ -456,11 +456,11 @@ void stp_topology_change_detection(struct stp_instance *br)
 
 	if (isroot) {
 		br->topology_change = 1;
-		mod_timer(&br->topology_change_timer, br->bridge_forward_delay  
+		mod_timer(br->topology_change_timer, br->bridge_forward_delay  
 						      + br->bridge_max_age);
 	} else if (!br->topology_change_detected) {
 		stp_transmit_tcn(br);
-		mod_timer(&br->tcn_timer, br->bridge_hello_time);
+		mod_timer(br->tcn_timer, br->bridge_hello_time);
 	}
 
 	br->topology_change_detected = 1;
@@ -510,7 +510,7 @@ static void stp_make_blocking(struct stp_port_entry *p)
 			stp_topology_change_detection(p->br);
 
 		p->state = BLOCKING;
-		del_timer(&p->forward_delay_timer);
+		del_timer(p->forward_delay_timer);
 	}
 }
 
@@ -524,7 +524,7 @@ static void stp_make_forwarding(struct stp_port_entry *p)
 	if (br->forward_delay == 0) {
 		p->state = FORWARDING;
 		stp_topology_change_detection(br);
-		del_timer(&p->forward_delay_timer);
+		del_timer(p->forward_delay_timer);
 	}
 	else if (p->br->stp_enabled == STP_ENABLED)
 		p->state = LISTENING;
@@ -532,7 +532,7 @@ static void stp_make_forwarding(struct stp_port_entry *p)
 		p->state = LEARNING;
 
 	if (br->forward_delay != 0)
-		mod_timer(&p->forward_delay_timer,  br->forward_delay);
+		mod_timer(p->forward_delay_timer,  br->forward_delay);
 }
 
 void stp_port_state_selection(struct stp_instance *br)
@@ -546,7 +546,7 @@ void stp_port_state_selection(struct stp_instance *br)
 				p->topology_change_ack = 0;
 				stp_make_forwarding(p);
 			} else if (stp_is_designated_port(p)) {
-				del_timer(&p->message_age_timer);
+				del_timer(p->message_age_timer);
 				stp_make_forwarding(p);
 			} else {
 				p->config_pending = 0;
@@ -596,11 +596,11 @@ void stp_received_config_bpdu(struct stp_port_entry *p, STP_BPDU_T *bpdu)
 		stp_port_state_selection(br);
 
 		if (!stp_is_root_bridge(br) && was_root) {
-			del_timer(&br->hello_timer);
+			del_timer(br->hello_timer);
 			if (br->topology_change_detected) {
-				del_timer(&br->topology_change_timer);
+				del_timer(br->topology_change_timer);
 				stp_transmit_tcn(br);
-				mod_timer(&br->tcn_timer, br->bridge_hello_time);
+				mod_timer(br->tcn_timer, br->bridge_hello_time);
 			}
 		}
 

@@ -45,9 +45,9 @@ void stp_disable_port(struct stp_port_entry *p)
 	p->topology_change_ack = 0;
 	p->config_pending = 0;
 
-	del_timer(&p->message_age_timer);
-	del_timer(&p->forward_delay_timer);
-	del_timer(&p->hold_timer);
+	del_timer(p->message_age_timer);
+	del_timer(p->forward_delay_timer);
+	del_timer(p->hold_timer);
 
 	stp_configuration_update(br);
 
@@ -63,7 +63,7 @@ void stp_enable (struct stp_instance *br)
 
 	br->stp_enabled = STP_ENABLED;
 
-	mod_timer(&br->hello_timer,  br->hello_time);
+	mod_timer(br->hello_timer,  br->hello_time);
 
 	stp_config_bpdu_generation(br);
 
@@ -86,9 +86,9 @@ void stp_disable (struct stp_instance *br)
 	br->topology_change = 0;
 	br->topology_change_detected = 0;
 
-	del_timer(&br->hello_timer);
-	del_timer(&br->topology_change_timer);
-	del_timer(&br->tcn_timer);
+	del_timer(br->hello_timer);
+	del_timer(br->topology_change_timer);
+	del_timer(br->tcn_timer);
 }
 
 void stp_change_bridge_id(struct stp_instance *br, const char *addr)

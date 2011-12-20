@@ -36,7 +36,7 @@ void show_mac_table ();
 static void    * fdb_hash_table = NULL;
 static uint32_t fdb_salt = 0;
 static int fdb_pool_id = -1;
-static int ageing_timer_id = -1;
+static TIMER_ID ageing_timer;
 /******************************************************/
 
 static tbridge_group_t tbridge;
@@ -65,12 +65,12 @@ int fdb_init (void)
 
 	fdb_salt = (uint32_t) times (NULL);
 
-	setup_timer (&ageing_timer_id, aging_timer_expired, NULL);
+	setup_timer (&ageing_timer, aging_timer_expired, NULL);
 
         install_cmd_handler ("show mac-address-table", "display MAC table", show_mac_table, NULL, 
 			     USER_EXEC_MODE);
 
-	mod_timer (&ageing_timer_id, tbridge.dot1dTpAgingTime);
+	mod_timer (ageing_timer, tbridge.dot1dTpAgingTime);
 
 	return 0;
 }
@@ -160,7 +160,7 @@ int delete_age_out_entires (fdb_t *p)
 void aging_timer_expired (void)
 {
 	hash_walk (fdb_hash_table, delete_age_out_entires); 
-	mod_timer (&ageing_timer_id, tbridge.dot1dTpAgingTime);
+	mod_timer (ageing_timer, tbridge.dot1dTpAgingTime);
 }
 
 void display_fdb_entry (fdb_t *p)

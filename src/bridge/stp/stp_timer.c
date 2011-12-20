@@ -33,7 +33,7 @@ static void stp_hello_timer_expired(unsigned long arg)
 
 	stp_config_bpdu_generation(br);
 
-	mod_timer (&br->hello_timer, br->hello_time);
+	mod_timer (br->hello_timer, br->hello_time);
 }
 
 static void stp_message_age_timer_expired(unsigned long arg)
@@ -62,7 +62,7 @@ static void stp_forward_delay_timer_expired(unsigned long arg)
 
 	if (p->state == LISTENING) {
 		p->state = LEARNING;
-		mod_timer(&p->forward_delay_timer,  br->forward_delay);
+		mod_timer(p->forward_delay_timer,  br->forward_delay);
 	} else if (p->state == LEARNING) {
 		p->state = FORWARDING;
 		if (stp_is_designated_for_some_port(br))
@@ -75,7 +75,7 @@ static void stp_tcn_timer_expired(unsigned long arg)
 	struct stp_instance *br = (struct stp_instance *) arg;
 
 	stp_transmit_tcn(br);
-	mod_timer(&br->tcn_timer, br->bridge_hello_time);
+	mod_timer(br->tcn_timer, br->bridge_hello_time);
 }
 
 static void stp_topology_change_timer_expired(unsigned long arg)

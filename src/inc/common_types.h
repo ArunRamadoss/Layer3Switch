@@ -112,7 +112,7 @@ enum {
 
 typedef int TRUTH;
 typedef int TIMESTMP;
-typedef int TIMER_ID;
+typedef void * TIMER_ID;
 
 typedef struct mac_hdr {
   MACADDRESS dest;
