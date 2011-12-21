@@ -119,9 +119,7 @@ int stp_process_events (int port, uint8_t event, int vlanid)
 		stp_enable_or_disable_port (port, event);
 
 	} else if (stp_mode == MODE_RSTP) {
-#if 0
 		rstp_enable_or_disable_port (port, event, vlanid);
-#endif
 	}
 }
 

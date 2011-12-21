@@ -13,13 +13,10 @@ show_spanning_tree_8021w (void)
 		if (pstp_inst->bs_running)
 		{
 			uint8_t              mac[6];
-			int		    is_root = 1;
-#if 0
 			int                 is_root = rstp_is_root_bridge (pstp_inst);
-#endif
 
 			printf ("\n  Rapid Spanning tree enabled protocol ieee on\n");
-			printf ("  -------------------------------------- \n\n");
+			printf ("  ------------------------------------------ \n\n");
 
 			printf ("  VLAN  : %d\n\n", pstp_inst->vlan_id);
 
@@ -59,27 +56,26 @@ show_spanning_tree_8021w (void)
 			{
 				printf ("\n\tRoot Port : %d\n", pstp_inst->root_port);
 			}
-			if (pstp_inst->ports)
+#endif
+			if (!list_empty(&pstp_inst->bs_bplist))
 			{
-				struct rstp_port_entry *p = NULL;
-				char               *state[] =
-				{ "DISABLED", "ALTERNATE", "BACKUP",
-					"ROOTPORT", "DESIGNATED"
-				};
+				struct bstp_port *p = NULL;
+				char     *role[] = { "DISABLED", "ROOT", "DESIGNATED",
+					  	     "ALTERNATE", "BACKUP"};
+				char     *state[] = { "DISABLED", "LISTENING", "LEARNING","FORWARDING","BLOCKING","DISCARDING"};
+
 				printf
-					("\nPort   Cost     State      Bridge Id    \n");
+				     ("\nPort     Cost       Role        State           Bridge Id    \n");
 				printf
-					("----   -----   ------   -----------------  \n");
-				for (p = pstp_inst->ports; p; p = p->next)
-				{
-					mac = p->owner->bridge_id.addr;
+					("----   ------     --------    ----------     -----------------  \n");
+				list_for_each_entry(p, &pstp_inst->bs_bplist, bp_next) {
+					PV2ADDR(p->bp_desg_pv.pv_dbridge_id, mac);
 					printf
-						("%2d   %4d   %10s   %02x:%02x:%02x:%02x:%02x:%02x\n",
-						 p->port_index, 20000, state[p->role], mac[0], mac[1],
+						("%2d   %8d   %10s    %10s     %02x:%02x:%02x:%02x:%02x:%02x\n",
+						 p->bp_ifp, 20000, role[p->bp_role], state[p->bp_state],mac[0], mac[1],
 						 mac[2], mac[3], mac[4], mac[5]);
 				}
 			}
-#endif
 		}
 		else
 		{

@@ -47,7 +47,7 @@ int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 			return -1;
 		}	
 
-		for (i = MAX_PORTS; i > 0 ; i--) {
+		for (i = 1; i <= MAX_PORTS ; i++) {
 			int res = 0;
 			IS_PORT_SET_PORT_LIST (p->egress_ports, i,res);
 			if (res) {
@@ -86,9 +86,6 @@ int vlan_spanning_tree_disable_on_vlan (int vlan_id, int mode)
 		}	
 		p->stp_instance = NULL;
 	} else if (mode == MODE_RSTP) {
-#if 0
-		rstp8021w_stpm_delete (p->rstp_instance);
-#endif
 
 		p->rstp_instance = NULL;
 

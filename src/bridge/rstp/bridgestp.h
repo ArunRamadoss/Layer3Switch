@@ -287,7 +287,7 @@ struct bstp_tcn_unit {
 
 struct bstp_port {
 	struct list_head	bp_next;
-	struct ifnet		*bp_ifp;	/* parent if */
+	int32_t		        bp_ifp;	/* parent if */
 	struct bstp_state	*bp_bs;
 	uint8_t			bp_active;
 	uint8_t			bp_protover;
@@ -367,7 +367,7 @@ struct bstp_state {
 	struct list_head	bs_bplist;
 	bstp_state_cb_t		bs_state_cb;
 	bstp_rtage_cb_t		bs_rtage_cb;
-	unsigned int		bs_bstpcallout;
+	TIMER_ID            *	bs_bstpcallout;
 };
 
 #ifdef LOCK

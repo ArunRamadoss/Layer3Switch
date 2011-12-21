@@ -40,3 +40,10 @@ int bridge_base_init (void)
 		this_bridge_ports[i].PortMtuExceededDiscards = 0;
 	}
 }
+
+void get_bridge_mac_address (char *addr)
+{
+	int j = 0;
+	for (j = 0; j < 6; j++)
+	 	addr[j] = this_bridge.addr.addr[j];
+}

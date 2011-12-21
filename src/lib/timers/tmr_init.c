@@ -208,14 +208,16 @@ static int alloc_timer_id (void)
 
 int stop_timer (TIMER_T *p)
 {
-	timer_del (p->apptimer, &tmrrq.root[p->wheel]);
+	if (p->apptimer && p->is_running) {
 
-	p->is_running = 0;
+		timer_del (p->apptimer, &tmrrq.root[p->wheel]);
 
-	free (p->apptimer);
+		p->is_running = 0;
 
-	DEC_TIMER_COUNT ();
-
+		free (p->apptimer);
+	
+		DEC_TIMER_COUNT ();
+	}
 	return 0;
 }
 
