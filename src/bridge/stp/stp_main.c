@@ -1,5 +1,8 @@
 #include "stp_info.h"
 
+static void stp_encode_bpdu (STP_BPDU_T *cpdu);
+static void stp_decode_bpdu (STP_BPDU_T *cpdu);
+
 struct stp_instance stp_global_instance;
 struct list_head  stp_instance_head;
 
@@ -187,7 +190,7 @@ int stp_process_bpdu (STP_BPDU_T *bpdu, uint16_t port)
 			debug_stp ("BPDU is malformed\n");
 			return -1;
 		}
-
+		stp_decode_bpdu (bpdu);
 		stp_received_config_bpdu (stp_port, bpdu);		
 
 	} else if (bpdu->type == BPDU_TC_TYPE) {
@@ -337,6 +340,7 @@ void stp_transmit_config(struct stp_port_entry *p)
 	bpdu.forward_delay = br->forward_delay;
 
 	if (bpdu.message_age < br->max_age) {
+		stp_encode_bpdu (&bpdu);
 		stp_send_config_bpdu(p, &bpdu);
 		p->topology_change_ack = 0;
 		p->config_pending = 0;
@@ -633,11 +637,12 @@ int stp_is_designated_port(const struct stp_port_entry *p)
 static void stp_send_bpdu(struct stp_port_entry *p,  const unsigned char *data,
 			 int length)
 {
-	void * pkt = NULL;
+	uint8_t * pkt = NULL;
+	uint8_t  smac[6];
 
-	int size = length + sizeof (MACHDR) + sizeof(ETHHDR);
+	int size = sizeof (MACHDR) + sizeof(ETHHDR);
 
-	pkt = tm_malloc (size); 
+	pkt = tm_malloc (size + length); 
 
 	if (!pkt)
 		return;
@@ -647,11 +652,13 @@ static void stp_send_bpdu(struct stp_port_entry *p,  const unsigned char *data,
 
 	llc_pdu_init_as_ui_cmd(pkt);
 
-	llc_mac_hdr_init (pkt, br_group_address, stp_global_instance.bridge_id.addr, 0x4);
+	get_port_mac_address (p->port_no, smac);
 
-	memcpy(pkt + size - length, data, length);
+	llc_mac_hdr_init (pkt, br_group_address, smac, 0x4, length + sizeof(ETHHDR));
 
-	send_packet (pkt, p->port_no, size);
+	memcpy(pkt + size, data, length);
+
+	send_packet (pkt, p->port_no, length + size);
 
 	tm_free (pkt);
 }
@@ -752,4 +759,28 @@ int is_dest_stp_group_address (MACADDRESS mac)
 		return 1;
 	}
 	return 0;
+}
+
+static void stp_encode_bpdu (STP_BPDU_T *cpdu)
+{
+	cpdu->root_id.prio   = htons(cpdu->root_id.prio);
+	cpdu->bridge_id.prio = htons(cpdu->bridge_id.prio);
+	cpdu->root_path_cost = htonl(cpdu->root_path_cost);
+	cpdu->message_age    = htons(cpdu->message_age);
+	cpdu->max_age        = htons(cpdu->max_age);
+	cpdu->hello_time     = htons(cpdu->hello_time);
+	cpdu->forward_delay  = htons(cpdu->forward_delay);
+	cpdu->port_id        = htons (cpdu->port_id);
+}
+
+static void stp_decode_bpdu (STP_BPDU_T *cpdu)
+{
+	cpdu->root_id.prio   = ntohs(cpdu->root_id.prio);
+	cpdu->bridge_id.prio = ntohs(cpdu->bridge_id.prio);
+	cpdu->root_path_cost = ntohl(cpdu->root_path_cost);
+	cpdu->message_age    = ntohs(cpdu->message_age);
+	cpdu->max_age        = ntohs(cpdu->max_age);
+	cpdu->hello_time     = ntohs(cpdu->hello_time);
+	cpdu->forward_delay  = ntohs(cpdu->forward_delay);
+	cpdu->port_id        = ntohs(cpdu->port_id);
 }

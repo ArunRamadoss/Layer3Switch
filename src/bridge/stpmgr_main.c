@@ -132,7 +132,7 @@ int process_bpdu (void *bpdu, uint16_t port, int vlanid, int len)
 	 	stp_process_bpdu (bpdu, port);
 
 	} else if (stp_mode == MODE_RSTP) {
-		rstp_process_bpdu (bpdu, port, vlanid, len);
+		rstp_process_bpdu (bpdu, port);
 	}
 
 	return 0;

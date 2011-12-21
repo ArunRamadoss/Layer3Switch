@@ -15,11 +15,9 @@
 #include <string.h>
 #include "stp_info.h"
 
-int llc_mac_hdr_init (char *pkt, const void *daddr, const void *saddr, int type)
+int llc_mac_hdr_init (char *pkt, const void *daddr, const void *saddr, int type, int len)
 {
         struct ether_hdr *eth = (struct ether_hdr *)pkt;
-
-	int len = 0; /*FIXME:*/
 
         if (type != ETH_P_802_3 && type != ETH_P_802_2)
                 eth->type = htons(type);
@@ -39,8 +37,7 @@ int llc_mac_hdr_init (char *pkt, const void *daddr, const void *saddr, int type)
         return -1;
 }
 
-void llc_pdu_header_init(char *pkt, uint8_t type,
-                                       uint8_t ssap, uint8_t dsap, uint8_t cr)
+void llc_pdu_header_init(uint8_t *pkt, uint8_t type, uint8_t ssap, uint8_t dsap, uint8_t cr)
 {
         const int hlen = type == LLC_PDU_TYPE_U ? 3 : 4;
         struct llc_pdu_un *pdu = (struct llc_pdu_un *)(pkt + sizeof(MACHDR));

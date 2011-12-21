@@ -300,7 +300,7 @@ bstp_send_bpdu(struct bstp_state *bs, struct bstp_port *bp,
 	bpdu->cbu_ctl = LLC_UI;
 	bpdu->cbu_protoid = htons(BSTP_PROTO_ID);
 
-	get_port_mac_address (ifp, bpdu->eth_hdr.ether_shost);
+	get_port_mac_address (ifp, &bpdu->eth_hdr.ether_shost);
 	memcpy(bpdu->eth_hdr.ether_dhost, bstp_etheraddr, ETHER_ADDR_LEN);
 
 	switch (bpdu->cbu_bpdutype) {
