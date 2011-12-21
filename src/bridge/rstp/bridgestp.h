@@ -138,22 +138,22 @@
 /*
  * Spanning tree defaults.
  */
-#define	BSTP_DEFAULT_MAX_AGE		(20 * 256)
-#define	BSTP_DEFAULT_HELLO_TIME		(2 * 256)
-#define	BSTP_DEFAULT_FORWARD_DELAY	(15 * 256)
-#define	BSTP_DEFAULT_HOLD_TIME		(1 * 256)
-#define	BSTP_DEFAULT_MIGRATE_DELAY	(3 * 256)
+#define	BSTP_DEFAULT_MAX_AGE		(20)
+#define	BSTP_DEFAULT_HELLO_TIME		(2)
+#define	BSTP_DEFAULT_FORWARD_DELAY	(15)
+#define	BSTP_DEFAULT_HOLD_TIME		(1)
+#define	BSTP_DEFAULT_MIGRATE_DELAY	(3)
 #define	BSTP_DEFAULT_HOLD_COUNT		6
 #define	BSTP_DEFAULT_BRIDGE_PRIORITY	0x8000
 #define	BSTP_DEFAULT_PORT_PRIORITY	0x80
 #define	BSTP_DEFAULT_PATH_COST		55
-#define	BSTP_MIN_HELLO_TIME		(1 * 256)
-#define	BSTP_MIN_MAX_AGE		(6 * 256)
-#define	BSTP_MIN_FORWARD_DELAY		(4 * 256)
+#define	BSTP_MIN_HELLO_TIME		(1)
+#define	BSTP_MIN_MAX_AGE		(6)
+#define	BSTP_MIN_FORWARD_DELAY		(4)
 #define	BSTP_MIN_HOLD_COUNT		1
-#define	BSTP_MAX_HELLO_TIME		(2 * 256)
-#define	BSTP_MAX_MAX_AGE		(40 * 256)
-#define	BSTP_MAX_FORWARD_DELAY		(30 * 256)
+#define	BSTP_MAX_HELLO_TIME		(2 )
+#define	BSTP_MAX_MAX_AGE		(40)
+#define	BSTP_MAX_FORWARD_DELAY		(30)
 #define	BSTP_MAX_HOLD_COUNT		10
 #define	BSTP_MAX_PRIORITY		61440
 #define	BSTP_MAX_PORT_PRIORITY		240
@@ -176,9 +176,19 @@
 #define	BSTP_INFO_DISABLED	4
 
 
-#define	BSTP_MESSAGE_AGE_INCR	(1 * 256)	/* in 256ths of a second */
-#define	BSTP_TICK_VAL		(1 * 256)	/* in 256ths of a second */
+#define	BSTP_MESSAGE_AGE_INCR	(1)	/* in 256ths of a second */
+#define	BSTP_TICK_VAL		(1)	/* in 256ths of a second */
 #define	BSTP_LINK_TIMER		(BSTP_TICK_VAL * 15)
+
+#define	PV2ADDR(pv, eaddr)	do {		\
+	eaddr[0] = pv >> 40;			\
+	eaddr[1] = pv >> 32;			\
+	eaddr[2] = pv >> 24;			\
+	eaddr[3] = pv >> 16;			\
+	eaddr[4] = pv >> 8;			\
+	eaddr[5] = pv >> 0;			\
+} while (0)
+
 
 /*
  * Driver callbacks for STP state changes

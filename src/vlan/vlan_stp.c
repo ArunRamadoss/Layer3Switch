@@ -36,7 +36,7 @@ int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 
 	} else if (mode == MODE_RSTP) {
 
-		if (rstp_create_instance (vlan_id, &p->stp_instance) < 0) {
+		if (rstp_create_instance (vlan_id, &p->rstp_instance) < 0) {
 			debug_vlan ("Unable to enable STP on vlan %d\n", vlan_id);
 			return -1;
 		}

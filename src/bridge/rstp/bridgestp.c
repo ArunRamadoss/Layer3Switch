@@ -45,14 +45,6 @@
 #define	DPRINTF(fmt, arg...)	(void)0
 #endif
 
-#define	PV2ADDR(pv, eaddr)	do {		\
-	eaddr[0] = pv >> 40;			\
-	eaddr[1] = pv >> 32;			\
-	eaddr[2] = pv >> 24;			\
-	eaddr[3] = pv >> 16;			\
-	eaddr[4] = pv >> 8;			\
-	eaddr[5] = pv >> 0;			\
-} while (0)
 
 #define	INFO_BETTER	1
 #define	INFO_SAME	0

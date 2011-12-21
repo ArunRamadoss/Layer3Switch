@@ -1,93 +1,92 @@
 #include "cli.h"
-#include "common_types.h"
+#include "bridgestp.h"
+
+extern struct list_head bstp_list;
 
 void
 show_spanning_tree_8021w (void)
 {
+	struct bstp_state             *pstp_inst = NULL;
+
+	list_for_each_entry(pstp_inst, &bstp_list, bs_list) {
+
+		if (pstp_inst->bs_running)
+		{
+			uint8_t              mac[6];
+			int		    is_root = 1;
 #if 0
-    STPM_T             *stp_instance_head = rstp8021w_stpm_get_the_list ();
-    STPM_T             *pstp_inst = NULL;
-
-    for (pstp_inst = stp_instance_head; pstp_inst; pstp_inst = pstp_inst->next)
-    {
-
-        if (pstp_inst->admin_state)
-        {
-
-            char               *mac = NULL;
-
-            int                 is_root = rstp_is_root_bridge (pstp_inst);
-
-            printf ("\n  Rapid Spanning tree enabled protocol ieee on\n");
-            printf ("  -------------------------------------- \n\n");
-
-            printf ("  VLAN  : %d\n\n", pstp_inst->vlan_id);
-
-            printf ("  Root ID\n\tPriority    %d\n",
-                    pstp_inst->designated_root.prio);
-
-            mac = pstp_inst->designated_root.addr;
-
-            printf ("\tAddress     %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-            if (is_root)
-            {
-                printf ("\tThis bridge is the root\n");
-            }
-
-            printf
-                ("\tHello Time  %d sec  Max Age %d sec  Forward Delay %d sec\n\n",
-                 pstp_inst->root_times.HelloTime, pstp_inst->root_times.MaxAge,
-                 pstp_inst->root_times.ForwardDelay);
-
-            printf ("  Bridge ID\n\tPriority    %d\n",
-                    pstp_inst->bridge_id.prio);
-
-            mac = pstp_inst->bridge_id.addr;
-
-            printf ("\tAddress     %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-            printf
-                ("\tHello Time  %d sec  Max Age %d sec  Forward Delay %d sec\n\n",
-                 pstp_inst->bridge_times.HelloTime,
-                 pstp_inst->bridge_times.MaxAge,
-                 pstp_inst->bridge_times.ForwardDelay);
-
-            if (!is_root)
-            {
-                printf ("\n\tRoot Port : %d\n", pstp_inst->root_port);
-            }
-
-            if (pstp_inst->ports)
-            {
-                struct rstp_port_entry *p = NULL;
-                char               *state[] =
-                    { "DISABLED", "ALTERNATE", "BACKUP",
-                    "ROOTPORT", "DESIGNATED"
-                };
-                printf
-                    ("\nPort   Cost     State      Bridge Id    \n");
-                printf
-                    ("----   -----   ------   -----------------  \n");
-                for (p = pstp_inst->ports; p; p = p->next)
-                {
-                    mac = p->owner->bridge_id.addr;
-                    printf
-                        ("%2d   %4d   %10s   %02x:%02x:%02x:%02x:%02x:%02x\n",
-                         p->port_index, 20000, state[p->role], mac[0], mac[1],
-                         mac[2], mac[3], mac[4], mac[5]);
-                }
-            }
-        }
-        else
-        {
-            printf ("\n Rapid Spanning tree not enabled on");
-            printf (" VLAN  : %d\n\n", pstp_inst->vlan_id);
-        }
-    }
+			int                 is_root = rstp_is_root_bridge (pstp_inst);
 #endif
+
+			printf ("\n  Rapid Spanning tree enabled protocol ieee on\n");
+			printf ("  -------------------------------------- \n\n");
+
+			printf ("  VLAN  : %d\n\n", pstp_inst->vlan_id);
+
+			printf ("  Root ID\n\tPriority    %d\n",
+					pstp_inst->bs_root_pv.pv_root_id >> 48);
+
+			PV2ADDR(pstp_inst->bs_root_pv.pv_root_id, mac);
+
+			printf ("\tAddress     %02x:%02x:%02x:%02x:%02x:%02x\n",
+					mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+			if (is_root)
+			{
+				printf ("\tThis bridge is the root\n");
+			}
+
+			printf
+				("\tHello Time  %d sec  Max Age %d sec  Forward Delay %d sec\n\n",
+				 pstp_inst->bs_root_htime, pstp_inst->bs_root_max_age,
+				 pstp_inst->bs_root_fdelay);
+
+			printf ("  Bridge ID\n\tPriority    %d\n", pstp_inst->bs_bridge_pv.pv_root_id >> 48);
+
+			PV2ADDR(pstp_inst->bs_bridge_pv.pv_root_id, mac);
+
+			printf ("\tAddress     %02x:%02x:%02x:%02x:%02x:%02x\n",
+					mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+			printf
+				("\tHello Time  %d sec  Max Age %d sec  Forward Delay %d sec\n\n",
+				 pstp_inst->bs_bridge_htime,
+				 pstp_inst->bs_bridge_max_age,
+				 pstp_inst->bs_bridge_fdelay);
+
+#if 0
+			if (!is_root)
+			{
+				printf ("\n\tRoot Port : %d\n", pstp_inst->root_port);
+			}
+			if (pstp_inst->ports)
+			{
+				struct rstp_port_entry *p = NULL;
+				char               *state[] =
+				{ "DISABLED", "ALTERNATE", "BACKUP",
+					"ROOTPORT", "DESIGNATED"
+				};
+				printf
+					("\nPort   Cost     State      Bridge Id    \n");
+				printf
+					("----   -----   ------   -----------------  \n");
+				for (p = pstp_inst->ports; p; p = p->next)
+				{
+					mac = p->owner->bridge_id.addr;
+					printf
+						("%2d   %4d   %10s   %02x:%02x:%02x:%02x:%02x:%02x\n",
+						 p->port_index, 20000, state[p->role], mac[0], mac[1],
+						 mac[2], mac[3], mac[4], mac[5]);
+				}
+			}
+#endif
+		}
+		else
+		{
+			printf ("\n Rapid Spanning tree not enabled on");
+			printf (" VLAN  : %d\n\n", pstp_inst->vlan_id);
+		}
+	}
 }
 
 void
