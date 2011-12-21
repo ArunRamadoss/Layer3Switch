@@ -5,15 +5,21 @@ export FINAL_OBJ=$PWD/build/obj/
 
 if [ "$1" = "" ]; then
 	echo "Building SIM Lib"
-	make -C ./build
+	make -C ./build 2>Err_log
 else
 	echo "Cleaning SIM Lib"
-	make $1 -C ./build
+	make $1 -C ./build 
+	rm Err_log
+	rm -f Switch.exe
 fi
 if [ $? = 0 ]; then
-	mv ./build/Switch.exe ./
+	cp -f ./build/Switch.exe ./
 	sync
-	echo "Sucessfully Done"
+	if [ "$1" = "" ]; then
+		echo "Sucessfully Built Image : Switch.exe"
+	else
+		echo "Sucessfully clean"
+	fi
 else
 	echo "Build Failure"
 fi

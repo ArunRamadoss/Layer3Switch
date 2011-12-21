@@ -1,6 +1,6 @@
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before lib BRIDGE STP SIM CLI PORT GDD  RSTP VLAN SWITCH all-after
+all: all-before lib BRIDGE STP SIM CLI PORT GDD  RSTP VLAN LIB SWITCH all-after
 
 include make.h
 
@@ -24,6 +24,8 @@ VLAN:
 RSTP:
 	make -C $(CODE_DIR)/bridge/rstp
 
+LIB:
+	make -C $(CODE_DIR)/lib
 
 
 SWITCH:  lib BRIDGE STP SIM CLI PORT GDD  RSTP VLAN
@@ -38,3 +40,4 @@ clean: clean-custom
 	make clean -C $(CODE_DIR)/gdd
 	make clean -C $(CODE_DIR)/bridge/rstp
 	make clean -C $(CODE_DIR)/vlan
+	make clean -C $(CODE_DIR)/lib

@@ -16,8 +16,8 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <errno.h>
-#include "list.h"
-#include "sched_sfs.h"
+#include <semaphore.h>
+#include "task.h"
 
 int create_sync_lock (sync_lock_t *slock)
 {

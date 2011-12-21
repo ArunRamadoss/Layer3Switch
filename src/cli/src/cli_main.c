@@ -162,7 +162,7 @@ cmd_print:
 char read_input ()
 {
 	char c = 0;
-	while (tm_read (fileno(stdin), &c, 1) == -1) {
+	while (read (fileno(stdin), &c, 1) == -1) {
 		continue;
 	}
 	return c;

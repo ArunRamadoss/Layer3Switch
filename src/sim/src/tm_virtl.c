@@ -185,7 +185,7 @@ int rcv_pkt (void *buf)
 	struct sockaddr_in si_other;
 	int slen=sizeof(si_other);
 
-	len = tm_recvfrom (sockid, buf, ETH_FRAME_LEN, 0, &si_other, &slen);
+	len = recvfrom (sockid, buf, ETH_FRAME_LEN, 0, &si_other, &slen);
 #ifdef PKT_DBG
 	printf("Received packet from %s:%d\nData: %s\n\n", 
         	inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), buf);

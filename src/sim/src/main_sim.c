@@ -84,7 +84,7 @@ int main (int argc, char **argv)
 	start_cli_task ();
 
 	while (1) {
-		sleep_forever ();
+		sleep (-1);
 	}
 }
 

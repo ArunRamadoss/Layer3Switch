@@ -295,7 +295,7 @@ int ifname_info (char *ifname)
 int rcv_pkt (void *buf)
 {
 	int len = 0;
-	len = tm_recvfrom (sockid, buf, ETH_FRAME_LEN, 0, NULL, NULL);
+	len = recvfrom (sockid, buf, ETH_FRAME_LEN, 0, NULL, NULL);
          return len;
 }
 void switch_to_os_threading (void);
@@ -338,6 +338,6 @@ int main (int argc, char **argv)
         install_cmd_handler ("show vlink", "Displays all virtual links", show_vlinks, NULL, 1);
 
 	while (1) {
-		sleep_forever ();
+		sleep (-1);
 	}
 }

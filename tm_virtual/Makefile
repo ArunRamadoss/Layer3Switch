@@ -17,7 +17,7 @@ obj:
 	mkdir -p ${vmgr_OBJ_DIR}
 
 clean: clean-custom
-	${RM} $(OBJ) $(BIN)  $(vmgr_OBJ_DIR)/*.o $(FINAL_OBJ)/* tmvirtual
+	${RM} $(OBJ) $(BIN)  $(vmgr_OBJS) tmvirtual
 
 $(vmgr_OBJ_DIR)/main.o: $(vmgr_SRCC_DIR)/main.c
 	$(CC) -c $(COMPILATION_SWITCH) $(vmgr_SRCC_DIR)/main.c -o $(vmgr_OBJ_DIR)/main.o $(CFLAGS) -I$(vmgr_INC_DIR)
@@ -29,4 +29,4 @@ $(vmgr_OBJ_DIR)/cmd_parser.o: $(vmgr_SRCC_DIR)/cmd_parser.c
 	$(CC) -c $(COMPILATION_SWITCH) $(vmgr_SRCC_DIR)/cmd_parser.c -o $(vmgr_OBJ_DIR)/cmd_parser.o $(CFLAGS) -I$(vmgr_INC_DIR)
 
 tmvirtual:
-	gcc -o tmvirtual $(FINAL_OBJ)/*  *.o $(LIB)
+	gcc -o tmvirtual $(FINAL_OBJ)/*  $(LIB)
