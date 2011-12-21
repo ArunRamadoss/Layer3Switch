@@ -282,6 +282,13 @@ static void stp_root_selection(struct stp_instance *br)
 	uint16_t root_port = 0;
 
 	list_for_each_entry(p, &br->port_list, list) {
+		/*Don't consider the Port for root selection
+  		  which rx'd its own bpdu because of loopback
+		  in the bridge
+  		 */
+		if (p->is_own_bpdu)
+			continue;
+
 		if (stp_should_become_root_port(p, root_port))
 			root_port = p->port_no;
 
@@ -439,8 +446,17 @@ static int stp_supersedes_port_info(struct stp_port_entry *p, STP_BPDU_T *bpdu)
 	if (memcmp(&bpdu->bridge_id, &p->br->bridge_id, 8))
 		return 1;
 
-	if (bpdu->port_id <= p->designated_port)
+	if (bpdu->port_id <= p->designated_port) {
+		/*802.1D 9.3.4 Validation of received BPDUs
+ 		 NOTE 1—If the Bridge Identifier and Port Identifier both 
+ 		 match the values that would be transmitted in a Configuration
+		 BPDU, the BPDU is discarded to prevent processing of the Port’s 
+		 own BPDUs;*/
+		if (bpdu->port_id == p->designated_port)
+			p->is_own_bpdu = 0;
 		return 1;
+	}
+
 
 	return 0;
 }
@@ -549,7 +565,7 @@ void stp_port_state_selection(struct stp_instance *br)
 				p->config_pending = 0;
 				p->topology_change_ack = 0;
 				stp_make_forwarding(p);
-			} else if (stp_is_designated_port(p)) {
+			} else if (!p->is_own_bpdu && stp_is_designated_port(p)) {
 				del_timer(p->message_age_timer);
 				stp_make_forwarding(p);
 			} else {
@@ -593,6 +609,8 @@ void stp_received_config_bpdu(struct stp_port_entry *p, STP_BPDU_T *bpdu)
 	br = p->br;
 
 	was_root = stp_is_root_bridge(br);
+
+	p->is_own_bpdu = 0;
 
 	if (stp_supersedes_port_info(p, bpdu)) {
 		stp_record_config_information(p, bpdu);
@@ -770,7 +788,6 @@ static void stp_encode_bpdu (STP_BPDU_T *cpdu)
 	cpdu->max_age        = htons(cpdu->max_age);
 	cpdu->hello_time     = htons(cpdu->hello_time);
 	cpdu->forward_delay  = htons(cpdu->forward_delay);
-	cpdu->port_id        = htons (cpdu->port_id);
 }
 
 static void stp_decode_bpdu (STP_BPDU_T *cpdu)
