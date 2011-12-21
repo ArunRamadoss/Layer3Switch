@@ -23,7 +23,7 @@
 #ifndef _ZEBRA_RIB_H
 #define _ZEBRA_RIB_H
 
-#include "prefix.h"
+#include "lib/prefix.h"
 
 #define DISTANCE_INFINITY  255
 

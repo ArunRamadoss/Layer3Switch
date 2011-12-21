@@ -21,25 +21,25 @@
 
 #include <zebra.h>
 
-#include "prefix.h"
-#include "table.h"
-#include "memory.h"
-#include "str.h"
-#include "command.h"
-#include "if.h"
-#include "log.h"
-#include "sockunion.h"
-#include "linklist.h"
-#include "thread.h"
-#include "workqueue.h"
-#include "prefix.h"
-#include "routemap.h"
+#include "lib/prefix.h"
+#include "lib/table.h"
+#include "lib/memory.h"
+//#include "str.h"
+#include "lib/command.h"
+#include "lib/if.h"
+#include "lib/log.h"
+#include "lib/sockunion.h"
+#include "lib/linklist.h"
+#include "lib/thread.h"
+#include "lib/workqueue.h"
+#include "lib/prefix.h"
+#include "lib/routemap.h"
 
-#include "zebra/rib.h"
-#include "zebra/rt.h"
-#include "zebra/zserv.h"
-#include "zebra/redistribute.h"
-#include "zebra/debug.h"
+#include "rib.h"
+#include "rt.h"
+#include "zserv.h"
+#include "redistribute.h"
+#include "debug.h"
 
 /* Default rtm_table for all clients */
 extern struct zebra_t zebrad;
