@@ -34,7 +34,7 @@ obj:
 	mkdir -p ${LIBS_OBJ_DIR}
 
 clean: clean-custom
-	rm $(LIBS_OBJ_DIR)/*.o $(FINAL_OBJ)/lib.o
+	$(RM) $(LIBS_OBJ_DIR)/*.o $(FINAL_OBJ)/lib.o
 
 $(LIBS_OBJ_DIR)/libinit.o: $(LIBS_SRCC_DIR)/libinit.c
 	$(CC) -c $(COMPILATION_SWITCH) $(LIBS_SRCC_DIR)/libinit.c -o $(LIBS_OBJ_DIR)/libinit.o $(CFLAGS) -I$(LIBS_INC_DIR)

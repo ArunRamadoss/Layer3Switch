@@ -16,7 +16,7 @@ obj:
 	mkdir -p ${DHCP_OBJ_DIR}
 
 clean: clean-custom
-	rm $(DHCP_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_dhcp.o
+	$(RM) $(DHCP_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_dhcp.o
 
 $(DHCP_OBJ_DIR)/dhcp_cli.o: $(DHCP_SRCC_DIR)/dhcp_cli.c
 	$(CC) -c $(COMPILATION_SWITCH) $(DHCP_SRCC_DIR)/dhcp_cli.c -o $(DHCP_OBJ_DIR)/dhcp_cli.o $(CFLAGS) -I$(DHCP_INC_DIR)

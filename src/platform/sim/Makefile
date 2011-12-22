@@ -1,7 +1,7 @@
 #   $Id: Makefile,v 1.4 2010/10/25 20:48:19 Sasi Exp $ 
 .PHONY: all all-before all-after clean clean-custom
 
-include ../build/make.h
+include ../../build/make.h
 
 SIM_CODE_DIR = .
 SIM_INC_DIR =  $(SIM_CODE_DIR)/inc -I$(COMMON_INC)
@@ -17,7 +17,7 @@ obj:
 	mkdir -p ${SIM_OBJ_DIR}
 
 clean: clean-custom
-	rm $(SIM_OBJ_DIR)/*.o $(FINAL_OBJ)/sim.o
+	$(RM) $(SIM_OBJ_DIR)/*.o $(FINAL_OBJ)/sim.o
 
 $(SIM_OBJ_DIR)/main_sim.o: $(SIM_SRCC_DIR)/main_sim.c
 	$(CC) -c $(COMPILATION_SWITCH) $(SIM_SRCC_DIR)/main_sim.c -o $(SIM_OBJ_DIR)/main_sim.o $(CFLAGS) -I$(SIM_INC_DIR)

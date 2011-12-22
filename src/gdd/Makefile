@@ -16,7 +16,7 @@ obj:
 	mkdir -p ${GDD_OBJ_DIR}
 
 clean: clean-custom
-	rm $(GDD_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_gdd.o
+	$(RM) $(GDD_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_gdd.o
 
 $(GDD_OBJ_DIR)/gdd_generic.o: $(GDD_SRCC_DIR)/gdd_generic.c
 	$(CC) -c $(COMPILATION_SWITCH) $(GDD_SRCC_DIR)/gdd_generic.c -o $(GDD_OBJ_DIR)/gdd_generic.o $(CFLAGS) -I$(GDD_INC_DIR)

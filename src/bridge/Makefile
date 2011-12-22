@@ -19,7 +19,7 @@ obj:
 	mkdir -p ${BRIDGE_OBJ_DIR}
 
 clean: clean-custom
-	rm $(BRIDGE_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_bridge.o
+	$(RM) $(BRIDGE_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_bridge.o
 
 $(BRIDGE_OBJ_DIR)/bridge.o: $(BRIDGE_SRCC_DIR)/bridge.c
 	$(CC) -c $(COMPILATION_SWITCH) $(BRIDGE_SRCC_DIR)/bridge.c -o $(BRIDGE_OBJ_DIR)/bridge.o $(CFLAGS) -I$(BRIDGE_INC_DIR)

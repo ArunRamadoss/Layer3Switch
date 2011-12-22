@@ -2,20 +2,22 @@
 
 export CODE_DIR=$PWD
 export FINAL_OBJ=$PWD/build/obj/
+export PLATFORM_EXE=sim
 
 if [ "$1" = "" ]; then
-	echo "Building SIM Lib"
+	echo "Building Layer3 switch for Simulation"
 	make -C ./build 2>Err_log
 else
 	echo "Cleaning SIM Lib"
 	make $1 -C ./build 
-	rm Err_log
-	rm -f Switch.exe
+	rm -f Err_log
+	rm -f ./build/Switch.exe
+	rm -f ./Switch.exe
 fi
 if [ $? = 0 ]; then
-	cp -f ./build/Switch.exe ./
-	sync
 	if [ "$1" = "" ]; then
+		cp -f ./build/Switch.exe ./
+		sync
 		echo "Sucessfully Built Image : Switch.exe"
 	else
 		echo "Sucessfully clean"

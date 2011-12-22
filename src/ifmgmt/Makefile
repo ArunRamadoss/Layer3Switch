@@ -18,7 +18,7 @@ obj:
 	mkdir -p ${INTERF_OBJ_DIR}
 
 clean: clean-custom
-	rm $(INTERF_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_port.o
+	$(RM) $(INTERF_OBJ_DIR)/*.o $(FINAL_OBJ)/tm_port.o
 
 $(INTERF_OBJ_DIR)/port.o: $(INTERF_SRCC_DIR)/port.c
 	$(CC) -c $(COMPILATION_SWITCH) $(INTERF_SRCC_DIR)/port.c -o $(INTERF_OBJ_DIR)/port.o $(CFLAGS) -I$(INTERF_INC_DIR)
