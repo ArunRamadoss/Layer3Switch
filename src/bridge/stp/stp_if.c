@@ -21,6 +21,7 @@ void stp_init_port(struct stp_port_entry *p)
 	p->state = BLOCKING;
 	p->topology_change_ack = 0;
 	p->config_pending = 0;
+	p->is_own_bpdu = 0;
 	p->enabled   = STP_ENABLED;
 	IF_STP_INFO(p->port_no) = p;
 }
@@ -44,6 +45,7 @@ void stp_disable_port(struct stp_port_entry *p)
 	p->state = DISABLED;
 	p->topology_change_ack = 0;
 	p->config_pending = 0;
+	p->is_own_bpdu = 0;
 
 	del_timer(p->message_age_timer);
 	del_timer(p->forward_delay_timer);

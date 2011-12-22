@@ -117,10 +117,10 @@ typedef void * TIMER_ID;
 typedef struct mac_hdr {
   MACADDRESS dest;
   MACADDRESS src;
+  uint16_t  len8023;
 } MACHDR;
 
 typedef struct eth_hdr {
-  uint16_t  len8023;
   uint8_t   dsap;
   uint8_t   ssap;
   uint8_t   llc;

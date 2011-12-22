@@ -46,6 +46,7 @@ static void stp_message_age_timer_expired(unsigned long arg)
 	if (p->state == DISABLED)
 		return;
 
+	p->is_own_bpdu = 0;
 	was_root = stp_is_root_bridge(br);
 
 	stp_become_designated_port(p);

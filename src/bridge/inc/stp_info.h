@@ -79,6 +79,7 @@ struct stp_port_entry {
         TIMER_ID    message_age_timer;
 	uint8_t     topology_change_ack;
         uint8_t	    config_pending;
+	uint8_t     is_own_bpdu;
 };
 
 #pragma pack(push)  /* push current alignment to stack */
