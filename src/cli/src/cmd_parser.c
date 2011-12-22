@@ -196,7 +196,7 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 		return NO_MATCH;
 	else if (strlen (cmd_tokens[i-1]) == strlen (token[i-1]))
 		return EXACT_MATCH;
-	else 
+	else if (strlen (cmd_tokens[i-1]) > strlen (token[i-1]))
 		return MATCH;
 }
 
@@ -319,6 +319,8 @@ int  handle_help (char *line, int is_tab)
 	int mode = 0;
 	int last_token = 0;
 	int rval = -1;
+	int in_complete_token_match = 0;
+	int total_exact_match = 0;
 
 	memset (tokens, 0, sizeof(tokens));
 
@@ -359,8 +361,9 @@ int  handle_help (char *line, int is_tab)
 					if (is_tab) {
 						iref++;
 						if (rval == EXACT_MATCH) {
-							match = cmd;
-							goto autocomplete;
+							total_exact_match++;
+						} else if (rval == MATCH) {
+							in_complete_token_match = 1;
 						}
 						if (iref == 1) {
 							match = cmd;
@@ -368,15 +371,19 @@ int  handle_help (char *line, int is_tab)
 						}
 						if (iref == 2) {
 							print_cmd_helpstring (match);
+							print_cmd_helpstring (cmd);
 							is_tab = 0;
 						}
 
-					}
-					print_cmd_helpstring (cmd);
+					} else
+						print_cmd_helpstring (cmd);
 				}
 			}
 		}
 
+		if (iref > 1 && in_complete_token_match) {
+			goto autocomplete;
+		}
 		if (iref == 1)
 			goto autocomplete;
 		if (flag)	
@@ -385,13 +392,13 @@ int  handle_help (char *line, int is_tab)
 
 	return 0;
 autocomplete:
-	rval = do_auto_complete (match->cmd, line, strlen(tokens[last_token]), last_token, iref);
+	rval = do_auto_complete (match->cmd, line, strlen(tokens[last_token]), last_token, in_complete_token_match);
 	if (rval && iref == 1)
 		print_cmd_helpstring (match);
 	return 0;
 }
 
-int  do_auto_complete (char *cmd, char *line, int len, int last_t, int nref)
+int  do_auto_complete (char *cmd, char *line, int len, int last_t, int in_complete_token_match)
 {
 	char * tokens[MAX_TOKENS];
 	char parse_cmd[MAX_CMD_NAME];

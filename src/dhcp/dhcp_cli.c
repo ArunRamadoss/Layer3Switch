@@ -26,11 +26,11 @@ int dhcp_cli_init (void)
 	install_cmd_handler ("ip address dhcp", "Acquires an IP address on an interface from DHCP. ", 
 			     cli_dhcp_acquire_ip_address , NULL,  INTERFACE_MODE);
 
-	install_cmd_handler ("ip dhcp client hostname <STRING>", "Specifies or modifies the host name sent in the DHCP message", 
-                              cli_dhcp_client_hostname, NULL, INTERFACE_MODE);
+	install_cmd_handler ("ip dhcp client host <hostname> ", "Specifies or modifies the host name sent in the DHCP message", 
+                              cli_dhcp_client_hostname, "ip dhcp client host <STR>", INTERFACE_MODE);
 
-	install_cmd_handler ("ip dhcp client lease  <INT> [<INT>] [<INT>]", "Configures the duration of the lease for an IP address", 
-                              cli_dhcp_client_lease, NULL, INTERFACE_MODE);
+	install_cmd_handler ("ip dhcp client lease <days> [<hours>] [<mins>]", "Configures the duration of the lease for an IP address", 
+                              cli_dhcp_client_lease, "ip dhcp client lease  <INT> [<INT>] [<INT>]", INTERFACE_MODE);
 }
 
 int dhcp_init (void)
