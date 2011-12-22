@@ -100,109 +100,8 @@ static char url [] = "For info, please visit http://www.isc.org/dhcp-contrib.htm
 
 static void usage PROTO ((char *));
 
-int main (argc, argv, envp)
-	int argc;
-	char **argv, **envp;
+int dhcp_client_init (void)
 {
-	int i;
-	struct servent *ent;
-	struct interface_info *ip;
-	int seed;
-	int quiet = 0;
-	char *s;
-
-	s = strrchr (argv [0], '/');
-	if (!s)
-		s = argv [0];
-	else
-		s++;
-
-	/* Initially, log errors to stderr as well as to syslogd. */
-#ifdef SYSLOG_4_2
-	openlog (s, LOG_NDELAY);
-	log_priority = DHCPD_LOG_FACILITY;
-#else
-	openlog (s, LOG_NDELAY, DHCPD_LOG_FACILITY);
-#endif
-
-#if !(defined (DEBUG) || defined (SYSLOG_4_2) || defined (__CYGWIN32__))
-	setlogmask (LOG_UPTO (LOG_INFO));
-#endif	
-
-	for (i = 1; i < argc; i++) {
-		if (!strcmp (argv [i], "-p")) {
-			if (++i == argc)
-				usage (s);
-			local_port = htons (atoi (argv [i]));
-			debug ("binding to user-specified port %d",
-			       ntohs (local_port));
-		} else if (!strcmp (argv [i], "-d")) {
-			no_daemon = 1;
-		} else if (!strcmp (argv [i], "-D")) {
-			save_scripts = 1;
-		} else if (!strcmp (argv [i], "-pf")) {
-			if (++i == argc)
-				usage (s);
-			path_dhclient_pid = argv [i];
-		} else if (!strcmp (argv [i], "-lf")) {
-			if (++i == argc)
-				usage (s);
-			path_dhclient_db = argv [i];
-		} else if (!strcmp (argv [i], "-cf")) {
-			if (++i == argc)
-				usage (s);
-			path_dhclient_conf = argv [i];
-		} else if (!strcmp (argv [i], "-q")) {
-			quiet = 1;
-			quiet_interface_discovery = 1;
-			log_perror = 0;
-		} else if (!strcmp (argv [i], "-o")) {
-			output_mode = 1;
- 		} else if (argv [i][0] == '-') {
- 		    usage (s);
- 		} else {
- 		    struct interface_info *tmp =
- 			((struct interface_info *)
- 			 dmalloc (sizeof *tmp, "specified_interface"));
- 		    if (!tmp)
- 			error ("Insufficient memory to %s %s",
- 			       "record interface", argv [i]);
- 		    memset (tmp, 0, sizeof *tmp);
- 		    strcpy (tmp -> name, argv [i]);
- 		    tmp -> next = interfaces;
- 		    tmp -> flags = INTERFACE_REQUESTED;
-		    interfaces_requested = 1;
- 		    interfaces = tmp;
- 		}
-	}
-
-	if (!quiet) {
-		note ("%s %s", message, DHCP_VERSION);
-		note (copyright);
-		note (arr);
-		note ("");
-		note (contrib);
-		note (url);
-		note ("");
-	}
-
-	/* Default to the DHCP/BOOTP port. */
-	if (!local_port) {
-#if BOOTARCH != PPC	   
-		ent = getservbyname ("dhcpc", "udp");
-#else
-	        ent = NULL;
-#endif	   
-		if (!ent)
-			local_port = htons (68);
-		else
-			local_port = ent -> s_port;
-#ifndef __CYGWIN32__
-#if BOOTARCH != PPC	   
-		endservent ();
-#endif	   
-#endif
-	}
 	remote_port = htons (ntohs (local_port) - 1);	/* XXX */
   
 	/* Get the current time... */
@@ -216,54 +115,8 @@ int main (argc, argv, envp)
 #endif
 	inaddr_any.s_addr = INADDR_ANY;
 
-	/* Discover all the network interfaces. */
-	discover_interfaces (DISCOVER_UNCONFIGURED);
 
-	/* Parse the dhclient.conf file. */
-	read_client_conf ();
-
-	/* Parse the lease database. */
-	read_client_leases ();
-
-	/* Rewrite the lease database... */
-	rewrite_client_leases ();
-
-	/* If no broadcast interfaces were discovered, call the script
-	   and tell it so. */
-	if (!interfaces) {
-		script_init ((struct interface_info *)0, "NBI",
-			     (struct string_list *)0);
-		script_go ((struct interface_info *)0);
-
-		note ("No broadcast interfaces found - exiting.");
-		/* Nothing more to do. */
-		exit (0);
-	} else {
-		/* Call the script with the list of interfaces. */
-		for (ip = interfaces; ip; ip = ip -> next) {
-			/* If interfaces were specified, don't configure
-			   interfaces that weren't specified! */
-			if (interfaces_requested &&
-			    ((ip -> flags & (INTERFACE_REQUESTED |
-					     INTERFACE_AUTOMATIC)) !=
-			     INTERFACE_REQUESTED))
-				continue;
-			script_init (ip, "PREINIT", (struct string_list *)0);
-			if (ip -> client -> alias)
-				script_write_params (ip, "alias_",
-						     ip -> client -> alias);
-			script_go (ip);
-		}
-	}
-
-	/* At this point, all the interfaces that the script thinks
-	   are relevant should be running, so now we once again call
-	   discover_interfaces(), and this time ask it to actually set
-	   up the interfaces. */
-	discover_interfaces (interfaces_requested
-			     ? DISCOVER_REQUESTED
-			     : DISCOVER_RUNNING);
-
+#if 0
 	/* Make up a seed for the random number generator from current
 	   time plus the sum of the last four bytes of each
 	   interface's hardware address interpreted as an integer.
@@ -278,12 +131,13 @@ int main (argc, argv, envp)
 		seed += junk;
 	}
 	srandom (seed + cur_time);
-
 	/* Start a configuration state machine for each interface. */
 	for (ip = interfaces; ip; ip = ip -> next) {
 		ip -> client -> state = S_INIT;
 		state_reboot (ip);
 	}
+
+#endif
 
 	/* Set up the bootp packet handler... */
 	bootp_packet_handler = do_packet;
@@ -295,23 +149,17 @@ int main (argc, argv, envp)
 	return 0;
 }
 
-static void usage (appname)
-	char *appname;
-{
-	note (message);
-	note (copyright);
-	note (arr);
-	note ("");
-	note (contrib);
-	note (url);
-	note ("");
-
-	warn ("Usage: %s [-c] [-p <port>] [-lf lease-file]", appname);
-	error ("       [-pf pidfile] [interface]");
-}
-
 void cleanup ()
 {
+}
+
+void dhcp_acquire_ip_address (uint16_t port_no)
+{
+	/* Start a configuration state machine for each interface. */
+	for (ip = interfaces; ip; ip = ip -> next) {
+		ip -> client -> state = S_INIT;
+		state_reboot (ip);
+	}
 }
 
 /* Individual States:
@@ -1795,39 +1643,6 @@ void free_client_lease (lease)
 
 FILE *leaseFile;
 
-void rewrite_client_leases ()
-{
-	struct interface_info *ip;
-	struct client_lease *lp;
-
-	if (leaseFile)
-		fclose (leaseFile);
-	leaseFile = fopen (path_dhclient_db, "w");
-	if (!leaseFile)
-		error ("can't create %s: %m", path_dhclient_db);
-
-	/* Write out all the leases attached to configured interfaces that
-	   we know about. */
-	for (ip = interfaces; ip; ip = ip -> next) {
-		for (lp = ip -> client -> leases; lp; lp = lp -> next) {
-			write_client_lease (ip, lp, 1);
-		}
-		if (ip -> client -> active)
-			write_client_lease (ip, ip -> client -> active, 1);
-	}
-
-	/* Write out any leases that are attached to interfaces that aren't
-	   currently configured. */
-	for (ip = dummy_interfaces; ip; ip = ip -> next) {
-		for (lp = ip -> client -> leases; lp; lp = lp -> next) {
-			write_client_lease (ip, lp, 1);
-		}
-		if (ip -> client -> active)
-			write_client_lease (ip, ip -> client -> active, 1);
-	}
-	fflush (leaseFile);
-}
-
 void write_client_lease (ip, lease, rewrite)
 	struct interface_info *ip;
 	struct client_lease *lease;
@@ -1904,53 +1719,6 @@ void write_client_lease (ip, lease, rewrite)
 		 t -> tm_hour, t -> tm_min, t -> tm_sec);
 	fprintf (leaseFile, "}\n");
 	fflush (leaseFile);
-}
-
-/* Variables holding name of script and file pointer for writing to
-   script.   Needless to say, this is not reentrant - only one script
-   can be invoked at a time. */
-char scriptName [256];
-FILE *scriptFile;
-
-void script_init (ip, reason, medium)
-	struct interface_info *ip;
-	char *reason;
-	struct string_list *medium;
-{
-	if (output_mode) {
-	    scriptFile = stdout;
-	} else {
-	int fd;
-#ifndef HAVE_MKSTEMP
-
-	do {
-#endif
-		strcpy (scriptName, "/tmp/dcsXXXXXX");
-#ifdef HAVE_MKSTEMP
-		fd = mkstemp (scriptName);
-#else
-		if (!mktemp (scriptName))
-			error ("can't create temporary client script %s: %m",
-			       scriptName);
-		fd = creat (scriptName, 0600);
-	} while (fd < 0);
-#endif
-
-	scriptFile = fdopen (fd, "w");
-	}
-	if (!scriptFile)
-		error ("can't write script file: %m");
-	fprintf (scriptFile, "#!/bin/sh\n\n");
-	if (ip) {
-		fprintf (scriptFile, "interface=\"%s\"\n", ip -> name);
-		fprintf (scriptFile, "export interface\n");
-	}
-	if (medium) {
-		fprintf (scriptFile, "medium=\"%s\"\n", medium -> string);
-		fprintf (scriptFile, "export medium\n");
-	}
-	fprintf (scriptFile, "reason=\"%s\"\n", reason);
-	fprintf (scriptFile, "export reason\n");
 }
 
 void script_write_params (ip, prefix, lease)
@@ -2099,39 +1867,6 @@ void script_write_params (ip, prefix, lease)
 	fprintf (scriptFile, "export %sexpiry\n", prefix);
 }
 
-int script_go (ip)
-	struct interface_info *ip;
-{
-	int rval;
-
-	if (ip)
-		fprintf (scriptFile, "%s\n",
-			 ip -> client -> config -> script_name);
-	else
-		fprintf (scriptFile, "%s\n",
-			 top_level_config.script_name);
-	fprintf (scriptFile, "exit $?\n");
-	if (output_mode) {
-		char line_buf[64];
-		char *s;
-
-		fflush(stdout);
-		s = fgets(line_buf, sizeof(line_buf), stdin);
-		if (s == NULL || strchr(s,'\n') == NULL) {
-			rval = 255;
-		} else {
-			rval = atoi(s);
-		}
-	} else {
-	fclose (scriptFile);
-	chmod (scriptName, 0700);
-	rval = system (scriptName);	
-	if (!save_scripts)
-		unlink (scriptName);
-	}
-	return rval;
-}
-
 char *dhcp_option_ev_name (option)
 	struct option *option;
 {
@@ -2149,60 +1884,4 @@ char *dhcp_option_ev_name (option)
 
 	evbuf [i] = 0;
 	return evbuf;
-}
-
-void go_daemon ()
-{
-	static int state = 0;
-	int pid;
-
-	/* Don't become a daemon if the user requested otherwise. */
-	if (no_daemon) {
-		write_client_pid_file ();
-		return;
-	}
-
-	/* Only do it once. */
-	if (state)
-		return;
-	state = 1;
-
-	/* Stop logging to stderr... */
-	log_perror = 0;
-
-	/* Become a daemon... */
-	if ((pid = fork ()) < 0)
-		error ("Can't fork daemon: %m");
-	else if (pid)
-		exit (0);
-	/* Become session leader and get pid... */
-	pid = setsid ();
-
-	/* Close standard I/O descriptors. */
-        close(0);
-        close(1);
-        close(2);
-
-	write_client_pid_file ();
-}
-
-void write_client_pid_file ()
-{
-	FILE *pf;
-	int pfdesc;
-
-	pfdesc = open (path_dhclient_pid, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-
-	if (pfdesc < 0) {
-		warn ("Can't create %s: %m", path_dhclient_pid);
-		return;
-	}
-
-	pf = fdopen (pfdesc, "w");
-	if (!pf)
-		warn ("Can't fdopen %s: %m", path_dhclient_pid);
-	else {
-		fprintf (pf, "%ld\n", (long)getpid ());
-		fclose (pf);
-	}
 }

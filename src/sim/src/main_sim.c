@@ -75,7 +75,7 @@ int main (int argc, char **argv)
 
 	bridge_init ();
 
-
+	dhcp_init ();
 
 	set_curr_mode (USER_EXEC_MODE);
 
