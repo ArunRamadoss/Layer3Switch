@@ -73,6 +73,8 @@ int main (int argc, char **argv)
 
 	port_init ();
 
+	ip_init ();
+
 	bridge_init ();
 
 	dhcp_init ();

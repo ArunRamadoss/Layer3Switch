@@ -194,7 +194,7 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 		return NO_MATCH;
 	else if (cmd_tokens[i] && !is_help) 
 		return NO_MATCH;
-	else if (strlen (cmd_tokens[i-1]) == strlen (token[i-1]))
+	else if (strlen (cmd_tokens[i-1]) == strlen (token[i-1]) || (!cmd_tokens[i] && !token[i]))
 		return EXACT_MATCH;
 	else if (strlen (cmd_tokens[i-1]) > strlen (token[i-1]))
 		return MATCH;
@@ -210,6 +210,9 @@ int validate_input_param (char *itoken, char *otoken)
 		}
 	}
 	if (!strncmp (otoken, "STR", sizeof("STR"))){
+		return 1;
+	}
+	if (!strncmp (otoken, "IPADDR", sizeof("IPADDR"))){
 		return 1;
 	}
 	return 1;

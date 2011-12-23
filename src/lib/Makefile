@@ -15,6 +15,7 @@ MEM_SRC_DIR = $(LIBS_SRCC_DIR)/mem
 
 LIBS_OBJS += $(LIBS_OBJ_DIR)/libinit.o
 LIBS_OBJS += $(LIBS_OBJ_DIR)/lock.o
+LIBS_OBJS += $(LIBS_OBJ_DIR)/util.o
 LIBS_OBJS += $(LIBS_OBJ_DIR)/msg_queue.o
 LIBS_OBJS += $(LIBS_OBJ_DIR)/hashlib.o
 LIBS_OBJS += $(LIBS_OBJ_DIR)/rbtree.o
@@ -38,6 +39,9 @@ clean: clean-custom
 
 $(LIBS_OBJ_DIR)/libinit.o: $(LIBS_SRCC_DIR)/libinit.c
 	$(CC) -c $(COMPILATION_SWITCH) $(LIBS_SRCC_DIR)/libinit.c -o $(LIBS_OBJ_DIR)/libinit.o $(CFLAGS) -I$(LIBS_INC_DIR)
+
+$(LIBS_OBJ_DIR)/util.o: $(LIBS_SRCC_DIR)/util.c
+	$(CC) -c $(COMPILATION_SWITCH) $(LIBS_SRCC_DIR)/util.c -o $(LIBS_OBJ_DIR)/util.o $(CFLAGS) -I$(LIBS_INC_DIR)
 
 $(LIBS_OBJ_DIR)/lock.o: $(LIBS_SRCC_DIR)/lock.c
 	$(CC) -c $(COMPILATION_SWITCH) $(LIBS_SRCC_DIR)/lock.c -o $(LIBS_OBJ_DIR)/lock.o $(CFLAGS) -I$(LIBS_INC_DIR)

@@ -1,6 +1,6 @@
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before lib BRIDGE STP CLI PORT GDD  RSTP VLAN DHCP PLATFORM LIB SWITCH all-after
+all: all-before lib BRIDGE STP CLI PORT GDD  RSTP VLAN DHCP IPV4 LIB PLATFORM SWITCH all-after
 
 include make.h
 
@@ -23,6 +23,8 @@ VLAN:
 
 RSTP:
 	make -C $(CODE_DIR)/bridge/rstp
+IPV4:
+	make -C $(CODE_DIR)/ipv4
 
 DHCP:
 	make -C $(CODE_DIR)/dhcp
@@ -31,7 +33,7 @@ LIB:
 	make -C $(CODE_DIR)/lib
 
 
-SWITCH:  lib BRIDGE STP PLATFORM CLI PORT GDD  RSTP VLAN
+SWITCH:  lib BRIDGE STP PLATFORM CLI PORT GDD  RSTP VLAN IPV4
 	gcc -o Switch.exe obj/*.o -lpthread -lrt
 
 clean: clean-custom
@@ -44,4 +46,5 @@ clean: clean-custom
 	make clean -C $(CODE_DIR)/vlan
 	make clean -C $(CODE_DIR)/lib
 	make clean -C $(CODE_DIR)/dhcp
+	make clean -C $(CODE_DIR)/ipv4
 	make clean -C $(CODE_DIR)/platform
