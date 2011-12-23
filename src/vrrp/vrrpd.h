@@ -16,7 +16,7 @@ REMARK      :
 /* system include */
 #include <stdint.h>
 
-#define VRRPD_VERSION	"0.4"
+#define MAX_VRRP_INSTANCE   255
 
 /* local include */
 
@@ -121,9 +121,11 @@ typedef struct {	/* parameters per virtual router -- rfc2338.6.1.2 */
 #define VRRP_TIMER_HZ			1000000
 uint32_t VRRP_TIMER_CLK( void )
 {
+#if 0
 	struct timeval tv;
         gettimeofday(&tv, NULL );
         return tv.tv_sec*VRRP_TIMER_HZ+tv.tv_usec;
+#endif
 }
               
 

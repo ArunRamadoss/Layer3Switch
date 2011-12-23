@@ -35,7 +35,6 @@ REMARK      :
 
 /* local include */
 #include "vrrpd.h"
-#include "ipaddr.h"
 
 int ip_id = 0;	/* to have my own ip_id creates collision with kernel ip->id
 		** but it should be ok because the packets are unlikely to be
@@ -43,9 +42,6 @@ int ip_id = 0;	/* to have my own ip_id creates collision with kernel ip->id
 		/* WORK: this packet isnt routed, i can check the outgoing MTU
 		** to warn the user only if the outoing mtu is too small */
 static char vrrp_hwaddr[6];	// WORK: lame hardcoded for ethernet
-static vrrp_rt	glob_vsrv;	/* a global because used in the signal handler*/
-
-static char	PidDir[FILENAME_MAX+1];
 
 
 /****************************************************************
@@ -290,7 +286,7 @@ static int ipaddr_ops( vrrp_rt *vsrv, int addF )
 	for( i = 0; i < vsrv->naddr; i++ ){
 		vip_addr	*vadd = &vsrv->vaddr[i];
 		if( !addF && !vadd->deletable ) 	continue;
-
+#if 0
 		if( ipaddr_op( ifidx , vadd->addr, addF)){
 			err = 1;
 			vadd->deletable = 0;
@@ -302,6 +298,7 @@ static int ipaddr_ops( vrrp_rt *vsrv, int addF )
 		}else{
 			vadd->deletable = 1;
 		}
+#endif
 	}
 	return err;
 }
@@ -557,32 +554,6 @@ static int vrrp_send_adv( vrrp_rt *vsrv, int prio )
 
 
 /****************************************************************
- NAME	: usage					00/02/06 08:50:28
- AIM	: display the usage
- REMARK	:
-****************************************************************/
-static void usage( void )
-{
-	fprintf( stderr, "vrrpd version %s\n", VRRPD_VERSION );
-	fprintf( stderr, "Usage: vrrpd -i ifname -v vrid [-f piddir] [-s] [-a auth] [-p prio] [-nh] ipaddr\n" );
-	fprintf( stderr, "  -h       : display this short inlined help\n" );
-	fprintf( stderr, "  -n       : Dont handle the virtual mac address\n" );
-	fprintf( stderr, "  -i ifname: the interface name to run on\n" );
-	fprintf( stderr, "  -v vrid  : the id of the virtual server [1-255]\n" );
-	fprintf( stderr, "  -s       : Switch the preemption mode (%s by default)\n"
-				, VRRP_PREEMPT_DFL? "Enabled" : "Disabled" );
-	fprintf( stderr, "  -a auth  : (not yet implemented) set the authentification type\n" );
-	fprintf( stderr, "             auth=(none|pass/hexkey|ah/hexkey) hexkey=0x[0-9a-fA-F]+\n");
-	fprintf( stderr, "  -p prio  : Set the priority of this host in the virtual server (dfl: %d)\n"
-							, VRRP_PRIO_DFL );
-	fprintf( stderr, "  -f piddir: specify the directory where the pid file is stored (dfl: %s)\n"
-							, VRRP_PIDDIR_DFL );
-	fprintf( stderr, "  -d delay : Set the advertisement interval (in sec) (dfl: %d)\n"
-							, VRRP_ADVER_DFL );
-	fprintf( stderr, "  ipaddr   : the ip address(es) of the virtual server\n" );
-}
-
-/****************************************************************
  NAME	: parse_authopt				00/09/26 22:01:17
  AIM	: 
  REMARK	: parse the authentication option from the user
@@ -730,20 +701,6 @@ static void cfg_add_ipaddr( vrrp_rt *vsrv, uint32_t ipaddr )
 	/* store the data */
 	vsrv->vaddr[vsrv->naddr-1].addr		= ipaddr;
 	vsrv->vaddr[vsrv->naddr-1].deletable	= 0;
-}
-
-/****************************************************************
- NAME	: init_virtual_srv			00/02/06 09:18:02
- AIM	:
- REMARK	:
-****************************************************************/
-static void init_virtual_srv( vrrp_rt *vsrv )
-{
-	memset( vsrv, 0, sizeof(*vsrv) );
-	vsrv->state	= VRRP_STATE_INIT;
-	vsrv->priority	= VRRP_PRIO_DFL;
-	vsrv->adver_int	= VRRP_ADVER_DFL*VRRP_TIMER_HZ;
-	vsrv->preempt	= VRRP_PREEMPT_DFL;
 }
 
 /****************************************************************
@@ -912,8 +869,10 @@ static void state_leave_master( vrrp_rt *vsrv, int advF )
 	** the cache of remote hosts using these addresses */
 	if( !vsrv->no_vmac ){
 		int		i, naddr;
+#if 0
 		naddr = ipaddr_list( ifname_to_idx(vif->ifname), addr
 				, sizeof(addr)/sizeof(addr[0]) );
+#endif
 		for( i = 0; i < naddr; i++ )
 			send_gratuitous_arp( vsrv, addr[i], 0 );
 	}
@@ -1027,45 +986,6 @@ static int open_sock( vrrp_rt *vsrv )
 	return 0;
 }
 
-
-/****************************************************************
- NAME	: signal_end				00/05/10 23:20:36
- AIM	:
- REMARK	:
-****************************************************************/
-static void signal_end( int nosig )
-{
-	vrrp_rt	*vsrv = &glob_vsrv;
-
-	/* remove the pid file */
-	pidfile_rm( vsrv );
-	/* if the deamon is master, leave this state */
-	if( vsrv->state == VRRP_STATE_MAST ){
-		state_leave_master( vsrv, 1 );
-	}
-	exit( 0 );
-}
-
-/****************************************************************
- NAME	: signal_user				00/05/10 23:20:36
- AIM	:
- REMARK	:
-****************************************************************/
-static void signal_user( int nosig )
-{
-	vrrp_rt	*vsrv = &glob_vsrv;
-
-	if( nosig == SIGUSR1 ){
-		vsrv->wantstate = VRRP_STATE_MAST;
-	}
-	if( nosig == SIGUSR2 ){
-		vsrv->wantstate = VRRP_STATE_BACK;
-	}
-	
-	/* rearm the signal */
-	signal( nosig, signal_user );
-}
-
 /****************************************************************
  NAME	: main					00/02/06 08:48:02
  AIM	:
@@ -1073,14 +993,7 @@ static void signal_user( int nosig )
 ****************************************************************/
 int main( int argc, char *argv[] )
 {
-	vrrp_rt	*vsrv = &glob_vsrv;
-
-#if 1	/* for debug only */
-	setbuf(stdout,NULL);
-	setbuf(stderr,NULL);
-#endif
-	
-	snprintf( PidDir, sizeof(PidDir), "%s", VRRP_PIDDIR_DFL );
+	vrrp_rt	*vsrv = NULL;
 
 	init_virtual_srv(vsrv);
 	/* parse the command line */
@@ -1104,16 +1017,6 @@ int main( int argc, char *argv[] )
 
 	/* the init is completed */
 	vsrv->initF = 1;
-
-	/* init signal handler */
-	signal( SIGINT, signal_end );
-	signal( SIGTERM, signal_end );
-	signal( SIGUSR1, signal_user );
-	signal( SIGUSR2, signal_user );
-
-	/* try to write a pid file */
-	if( pidfile_exist( vsrv ) )	return -1;
-	pidfile_write( vsrv );
 
 	/* main loop */
 	while( 1 ){
