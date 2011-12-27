@@ -176,7 +176,7 @@ int match_command (cmdnode_t *cmd, char *token[], char * (*args)[10])
 
 	while (cmd_tokens[i] && token[i]) {
 #define IS_SPECIAL_CHAR(ch)  ((ch < 65 && ch > 90) && (ch < 97 && ch > 122))
-		if ((*cmd_tokens[i]) == '<') {
+		if (((*cmd_tokens[i]) == '<') ||((*cmd_tokens[i]) == '[') ) {
 			if (args)
 				(*args)[j++] = token[i];
 			if (!validate_input_param (token[i], cmd_tokens[i] + 1))
@@ -423,7 +423,7 @@ int  do_auto_complete (char *cmd, char *line, int len, int last_t, int in_comple
 	else  
 		offset = strlen (line) - len;
 
-	if (tokens[last_t] && *tokens[last_t] != '<') {
+	if (tokens[last_t] && ((*tokens[last_t] != '<') && (*tokens[last_t] != '['))) {
 		strcpy (line + offset, tokens[last_t]);
 		strcat  (line, " ");
 	}
