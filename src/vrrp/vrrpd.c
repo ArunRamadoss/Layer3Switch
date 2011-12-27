@@ -10,29 +10,6 @@ REMARK      :
   2 of the License, or (at your option) any later version.
 ==============================================================================*/
 
-/* system include */
-#include <stdio.h>
-#include <assert.h>
-#include <net/ethernet.h>
-#include <netinet/ip.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <time.h>
-#include <sys/errno.h>
-#include <net/if.h>
-#include <net/if_arp.h>
-#include <net/ethernet.h>
-#include <sys/ioctl.h>
-#include <ctype.h>
-#include <string.h>
-
 /* local include */
 #include "vrrpd.h"
 
@@ -42,79 +19,6 @@ int ip_id = 0;	/* to have my own ip_id creates collision with kernel ip->id
 		/* WORK: this packet isnt routed, i can check the outgoing MTU
 		** to warn the user only if the outoing mtu is too small */
 static char vrrp_hwaddr[6];	// WORK: lame hardcoded for ethernet
-
-
-/****************************************************************
- NAME	: get_pid_name				00/10/04 21:06:44
- AIM	: 
- REMARK	:
-****************************************************************/
-static char *pidfile_get_name( vrrp_rt *vsrv )
-{
-	static char pidfile[FILENAME_MAX+1];
-	snprintf( pidfile, sizeof(pidfile), "%s/" VRRP_PID_FORMAT
-					, PidDir
-					, vsrv->vif.ifname 
-					, vsrv->vrid );
-	return pidfile;
-}
-
-/****************************************************************
- NAME	: pidfile_write				00/10/04 21:12:26
- AIM	: 
- REMARK	: write the pid file
-****************************************************************/
-static int pidfile_write( vrrp_rt *vsrv )
-{
-	char	*name	= pidfile_get_name(vsrv);
-	FILE	*fOut	= fopen( name, "w" );
-	if( !fOut ){
-		fprintf( stderr, "Can't open %s (errno %d %s)\n", name 
-						, errno
-						, strerror(errno) 
-						);
-		return -1;
-	}
-	fprintf( fOut, "%d\n", getpid() );
-	fclose( fOut );
-	return(0);
-}
-
-/****************************************************************
- NAME	: pidfile_rm				00/10/04 21:12:26
- AIM	: 
- REMARK	:
-****************************************************************/
-static void pidfile_rm( vrrp_rt *vsrv )
-{
-	unlink( pidfile_get_name(vsrv) );
-}
-
-/****************************************************************
- NAME	: pidfile_exist				00/10/04 21:12:26
- AIM	: return 0 if there is no valid pid in the pidfile or no pidfile
- REMARK	: 
-****************************************************************/
-static int pidfile_exist( vrrp_rt *vsrv )
-{
-	char	*name	= pidfile_get_name(vsrv);
-	FILE	*fIn	= fopen( name, "r" );
-	pid_t	pid;
-	/* if there is no file */
-	if( !fIn )		return 0;
-	fscanf( fIn, "%d", &pid );
-	fclose( fIn );
-	/* if there is no process, remove the stale file */
-	if( kill( pid, 0 ) ){
-		fprintf(stderr, "Remove a stale pid file %s\n", name );
-		pidfile_rm( vsrv );
-		return 0;
-	}
-	/* if the kill suceed, return an error */
-	return -1;
-}
-
-
 
 /****************************************************************
  NAME	: in_csum				00/05/10 20:12:20
@@ -154,121 +58,12 @@ static u_short in_csum( u_short *addr, int len, u_short csum)
 
 
 /****************************************************************
- NAME	: get_dev_from_ip			00/02/08 06:51:32
- AIM	:
- REMARK	:
-****************************************************************/
-static uint32_t ifname_to_ip( char *ifname )
-{
-	struct ifreq	ifr;
-	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	uint32_t	addr	= 0;
-	if (fd < 0) 	return (-1);
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	if (ioctl(fd, SIOCGIFADDR, (char *)&ifr) == 0) {
-		struct sockaddr_in *sin = (struct sockaddr_in *)&ifr.ifr_addr;
-		addr = ntohl(sin->sin_addr.s_addr);
-	}
-	close(fd);
-	return addr;
-}
-
-/****************************************************************
- NAME	: get_dev_from_ip			00/02/08 06:51:32
- AIM	:
- REMARK	:
-****************************************************************/
-static int ifname_to_idx( char *ifname )
-{
-	struct ifreq	ifr;
-	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	int		ifindex = -1;
-	if (fd < 0) 	return (-1);
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	if (ioctl(fd, SIOCGIFINDEX, (char *)&ifr) == 0)
-		ifindex = ifr.ifr_ifindex;
-	close(fd);
-	return ifindex;
-}
-
-/****************************************************************
  NAME	: rcvhwaddr_op				00/02/08 06:51:32
  AIM	:
  REMARK	:
 ****************************************************************/
 static int rcvhwaddr_op( char *ifname, char *addr, int addrlen, int addF )
 {
-	struct ifreq	ifr;
-	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	int		ret;
-	if (fd < 0) 	return (-1);
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	memcpy( ifr.ifr_hwaddr.sa_data, addr, addrlen );
-	ifr.ifr_hwaddr.sa_family = AF_UNSPEC;
-	ret = ioctl(fd, addF ? SIOCADDMULTI : SIOCDELMULTI, (char *)&ifr);
-	if( ret ){
-		printf("Can't %s on %s. errno=%d\n"
-			, addF ? "SIOCADDMULTI" : "SIOCDELMULTI"
-			, ifname, errno );
-	}
-	close(fd);
-	return ret;
-}
-
-/****************************************************************
- NAME	: hwaddr_set				00/02/08 06:51:32
- AIM	:
- REMARK	: linux refuse to change the hwaddress if the interface is up
-****************************************************************/
-static int hwaddr_set( char *ifname, char *addr, int addrlen )
-{
-	struct ifreq	ifr;
-	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	int		ret;
-	unsigned long	flags;
-	if (fd < 0) 	return (-1);
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	/* get the flags */
-	ret = ioctl(fd, SIOCGIFFLAGS, (char *)&ifr);
-	if( ret )	goto end;
-	flags = ifr.ifr_flags;
-	/* set the interface down */
-	ifr.ifr_flags &= ~IFF_UP;
-	ret = ioctl(fd, SIOCSIFFLAGS, (char *)&ifr);
-	if( ret )	goto end;
-	/* change the hwaddr */
-	memcpy( ifr.ifr_hwaddr.sa_data, addr, addrlen );
-	ifr.ifr_hwaddr.sa_family = AF_UNIX;
-	ret = ioctl(fd, SIOCSIFHWADDR, (char *)&ifr);
-	if( ret )	goto end;
-	/* set the interface up */
-	ifr.ifr_flags = flags;
-	ret = ioctl(fd, SIOCSIFFLAGS, (char *)&ifr);
-	if( ret )	goto end;
-end:;
-if( ret )	printf("error errno=%d\n",errno);
-
-	close(fd);
-	return ret;
-}
-
-/****************************************************************
- NAME	: hwaddr_get				00/02/08 06:51:32
- AIM	:
- REMARK	:
-****************************************************************/
-static int hwaddr_get( char *ifname, char *addr, int addrlen )
-{
-	struct ifreq	ifr;
-	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	int		ret;
-	if (fd < 0) 	return (-1);
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	ret = ioctl(fd, SIOCGIFHWADDR, (char *)&ifr);
-	memcpy( addr, ifr.ifr_hwaddr.sa_data, addrlen );
-//printf("%x:%x:%x:%x:%x:%x\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5] );
-	close(fd);
-	return ret;
 }
 
 
@@ -280,8 +75,11 @@ static int hwaddr_get( char *ifname, char *addr, int addrlen )
 static int ipaddr_ops( vrrp_rt *vsrv, int addF )
 {
 	int	i, err	= 0;
-	int	ifidx	= ifname_to_idx( vsrv->vif.ifname );
+	int	ifidx	= -1;
+#if 0
 	struct in_addr in;
+	int	ifidx	= ifname_to_idx( vsrv->vif.ifname );
+#endif
 
 	for( i = 0; i < vsrv->naddr; i++ ){
 		vip_addr	*vadd = &vsrv->vaddr[i];
@@ -343,7 +141,6 @@ static int vrrp_in_chk( vrrp_rt *vsrv, struct iphdr *ip )
 {
 	int		ihl = ip->ihl << 2;
 	vrrp_pkt *	hd = (vrrp_pkt *)((char *)ip + ihl);
-	vrrp_if 	*vif	= &vsrv->vif;
 	/* MUST verify that the IP TTL is 255 */
 	if( ip->ttl != VRRP_IP_TTL ) {
 		VRRP_LOG(("invalid ttl. %d and expect %d", ip->ttl,VRRP_IP_TTL));
@@ -369,16 +166,16 @@ static int vrrp_in_chk( vrrp_rt *vsrv, struct iphdr *ip )
 	}
 /* MUST perform authentication specified by Auth Type */
  	/* check the authentication type */
-	if( vif->auth_type != hd->auth_type ){		
-		VRRP_LOG(("receive a %d auth, expecting %d!", vif->auth_type
+	if( vsrv->auth_type != hd->auth_type ){		
+		VRRP_LOG(("receive a %d auth, expecting %d!", vsrv->auth_type
 							, hd->auth_type));
 		return 1;
 	}
 	/* check the authentication if it is a passwd */
 	if( hd->auth_type != VRRP_AUTH_PASS ){
 		char	*pw	= (char *)ip + ntohs(ip->tot_len)
-				  -sizeof(vif->auth_data);
-		if( memcmp( pw, vif->auth_data, sizeof(vif->auth_data)) ){
+				  -sizeof(vsrv->auth_data);
+		if( memcmp( pw, vsrv->auth_data, sizeof(vsrv->auth_data)) ){
 			VRRP_LOG(("receive an invalid passwd!"));
 			return 1;
 		}
@@ -443,7 +240,7 @@ static void vrrp_build_ip( vrrp_rt *vsrv, char *buffer, int buflen )
 	ip->frag_off	= 0;
 	ip->ttl		= VRRP_IP_TTL;
 	ip->protocol	= IPPROTO_VRRP;
-	ip->saddr	= htonl(vsrv->vif.ipaddr);
+	ip->saddr	= htonl(vsrv->ipaddr);
 	ip->daddr	= htonl(INADDR_VRRP_GROUP);
 	/* checksum must be done last */
 	ip->check	= in_csum( (u_short*)ip, ip->ihl*4, 0 );
@@ -457,7 +254,6 @@ static void vrrp_build_ip( vrrp_rt *vsrv, char *buffer, int buflen )
 static int vrrp_build_vrrp( vrrp_rt *vsrv, int prio, char *buffer, int buflen )
 {
 	int	i;
-	vrrp_if	 *vif	= &vsrv->vif;
 	vrrp_pkt *hd	= (vrrp_pkt *)buffer;
 	uint32_t *iparr	= (uint32_t *)((char *)hd+sizeof(*hd));
 	
@@ -465,7 +261,7 @@ static int vrrp_build_vrrp( vrrp_rt *vsrv, int prio, char *buffer, int buflen )
 	hd->vrid	= vsrv->vrid;
 	hd->priority	= prio;
 	hd->naddr	= vsrv->naddr;
-	hd->auth_type	= vsrv->vif.auth_type;
+	hd->auth_type	= vsrv->auth_type;
 	hd->adver_int	= vsrv->adver_int/VRRP_TIMER_HZ;
 	/* copy the ip addresses */
 	for( i = 0; i < vsrv->naddr; i++ ){
@@ -473,9 +269,9 @@ static int vrrp_build_vrrp( vrrp_rt *vsrv, int prio, char *buffer, int buflen )
 	}
 	hd->chksum	= in_csum( (u_short*)hd, vrrp_hd_len(vsrv), 0);
 	/* copy the passwd if the authentication is VRRP_AH_PASS */
-	if( vif->auth_type == VRRP_AUTH_PASS ){
+	if( vsrv->auth_type == VRRP_AUTH_PASS ){
 		char	*pw	= (char *)hd+sizeof(*hd)+vsrv->naddr*4;
-		memcpy( pw, vif->auth_data, sizeof(vif->auth_data));
+		memcpy( pw, vsrv->auth_data, sizeof(vsrv->auth_data));
 	}
 	return(0);
 }
@@ -507,22 +303,7 @@ static void vrrp_build_pkt( vrrp_rt *vsrv, int prio, char *buffer, int buflen )
 ****************************************************************/
 static int vrrp_send_pkt( vrrp_rt *vsrv, char *buffer, int buflen )
 {
-	struct sockaddr from;
-	int	len;
-	int	fd = socket(PF_PACKET, SOCK_PACKET, 0x300); /* 0x300 is magic */
-// WORK:
-	if( fd < 0 ){
-		perror( "socket" );
-		return -1;
-	}
-	/* build the address */
-	memset( &from, 0 , sizeof(from));
-	strcpy( from.sa_data, vsrv->vif.ifname );
-	/* send the data */
 	len = sendto( fd, buffer, buflen, 0, &from, sizeof(from) );
-//printf("len=%d\n",len);
-	close( fd );
-	return len;
 }
 
 /****************************************************************
@@ -561,30 +342,28 @@ static int vrrp_send_adv( vrrp_rt *vsrv, int prio )
 static int parse_authopt(vrrp_rt *vsrv, char *str)
 {
  	int	len	= strlen(str);
-	vrrp_if *vif	= &vsrv->vif;
 
-	vif->auth_type = VRRP_AUTH_NONE;
+	vsrv->auth_type = VRRP_AUTH_NONE;
 	/* epxlicitly no authentication */
 	if( !strcmp(str,"none") )	return 0;
 	/* below the min len */
  	if( len < 5 )		return -1;
 	/* check the type of authentication */
  	if( !strncmp(str, "ah/0x", 5 ) ){
-		vif->auth_type = VRRP_AUTH_AH;	
+		vsrv->auth_type = VRRP_AUTH_AH;	
 		return -1;	/* WORK: not yet implemented */
 	}else if( !strncmp(str, "pw/0x", 5 ) ){
 		int	i,j;
-		vif->auth_type = VRRP_AUTH_PASS;
-		memset( vif->auth_data, 0, sizeof(vif->auth_data) );
+		vsrv->auth_type = VRRP_AUTH_PASS;
+		memset( vsrv->auth_data, 0, sizeof(vsrv->auth_data) );
 		/* parse the key */
-		for( i=5,j=0; j < sizeof(vif->auth_data)*2 && i<len ;i++,j++ ){
+		for( i=5,j=0; j < sizeof(vsrv->auth_data)*2 && i<len ;i++,j++ ){
 			/* sanity check */
 			if( !isxdigit(str[i]) )	return -1;
 			str[i] = toupper(str[i]);
 			if( str[i] >= 'A' )	str[i] -= 'A' - 10;
 			else			str[i] -= '0';
-			vif->auth_data[j/2] |= str[i] << (j&1 ? 0 : 4 );
-//WORK:			printf(" j=%d c=%d 0x%x\n",j,str[i],vif->auth_data[j/2]);
+			vsrv->auth_data[j/2] |= str[i] << (j&1 ? 0 : 4 );
 		}
 		if( i != len )	return -1;
 	}else{
@@ -601,84 +380,6 @@ static int parse_authopt(vrrp_rt *vsrv, char *str)
 ****************************************************************/
 static int parse_cmdline( vrrp_rt *vsrv, int argc, char *argv[] )
 {
-	vrrp_if *vif = &vsrv->vif;
-	int	c;
-	while( 1 ){
-		c = getopt( argc, argv, "f:si:v:a:p:d:hn" );
-		/* if the parsing is completed, exit */
-		if( c == EOF )	break;
-		switch( c ){
-		case 'n':
-			vsrv->no_vmac	= 1;
-			break;
-		case 's':
-			vsrv->preempt	= !vsrv->preempt;
-			break;
-		case 'f':
-			snprintf( PidDir, sizeof(PidDir), "%s", optarg );
-			break;
-		case 'i':
-			vif->ifname	= strdup( optarg );
-			/* get the ip address */
-			vif->ipaddr	= ifname_to_ip( optarg );
-			if( !vif->ipaddr ){
-				fprintf( stderr, "no interface found!\n" );
-				goto err;
-			}
-			/* get the hwaddr */
-			if( hwaddr_get( vif->ifname, vif->hwaddr
-					, sizeof(vif->hwaddr)) ){
-				fprintf( stderr, "Can't read the hwaddr on this interface!\n" );
-				goto err;
-			}
-//			printf("ifname=%s 0x%x\n",vsrv->vif.ifname,vsrv->vif.ipaddr);
-			break;
-		case 'v':
-			vsrv->vrid = atoi( optarg );
-			if( VRRP_IS_BAD_VID(vsrv->vrid) ){
-				fprintf( stderr, "bad vrid!\n" );
-				goto err;
-			}
-			vrrp_hwaddr[0] = 0x00;
-			vrrp_hwaddr[1] = 0x00;
-			vrrp_hwaddr[2] = 0x5E;
-			vrrp_hwaddr[3] = 0x00;
-			vrrp_hwaddr[4] = 0x01;
-			vrrp_hwaddr[5] = vsrv->vrid;
-			break;
-		case 'a':
-			if( parse_authopt( vsrv, optarg ) ){
-				fprintf( stderr, "Invalid authentication key!\n" );
-				goto err;
-			}
-			break;
-		case 'p':
-			vsrv->priority = atoi( optarg );
-			if( VRRP_IS_BAD_PRIORITY(vsrv->priority) ){
-				fprintf( stderr, "bad priority!\n" );
-				goto err;
-			}
-			break;
-		case 'd':
-			vsrv->adver_int = atoi( optarg );
-			if( VRRP_IS_BAD_ADVERT_INT(vsrv->adver_int) ){
-				fprintf( stderr, "bad advert_int!\n" );
-				goto err;
-			}
-			vsrv->adver_int *= VRRP_TIMER_HZ;
-			break;
-		case 'h':
-			usage();
-			exit( 1 );			break;
-		case ':':	/* missing parameter */
-		case '?':	/* unknown option */
-		default:
-			goto err;
-		}
-	}
-	return optind;
-err:;
-	usage();
 	return -1;
 }
 
@@ -718,15 +419,10 @@ static int chk_min_cfg( vrrp_rt *vsrv )
 		fprintf(stderr, "the virtual id must be set!\n");
 		return -1;
 	}
-	if( vsrv->vif.ipaddr == 0 ){
+	if( vsrv->ipaddr == 0 ){
 		fprintf(stderr, "the interface ipaddr must be set!\n");
 		return -1;
 	}
-	/* make vrrp use the native hwaddr and not the virtual one */
-	if( vsrv->no_vmac ){
-		memcpy( vrrp_hwaddr, vsrv->vif.hwaddr,sizeof(vsrv->vif.hwaddr));
-	}
-	return(0);
 }
 
 /****************************************************************
@@ -793,7 +489,7 @@ struct m_arphdr
 	char	buflen	= sizeof(struct m_arphdr)+ETHER_HDR_LEN;
 	struct ether_header 	*eth	= (struct ether_header *)buf;
 	struct m_arphdr	*arph = (struct m_arphdr *)(buf+vrrp_dlt_len(vsrv));
-	char	*hwaddr	= vAddrF ? vrrp_hwaddr : vsrv->vif.hwaddr;
+	char	*hwaddr	= vAddrF ? vrrp_hwaddr : vsrv->hwaddr;
 	int	hwlen	= ETH_ALEN;
 
 	/* hardcoded for ethernet */
@@ -824,12 +520,13 @@ struct m_arphdr
 static void state_goto_master( vrrp_rt *vsrv )
 {
 	int	i;
-	vrrp_if	*vif = &vsrv->vif;
+#if 0
 	/* set the VRRP MAC address -- rfc2338.7.3 */
 	if( !vsrv->no_vmac ){
 		hwaddr_set( vif->ifname, vrrp_hwaddr, sizeof(vrrp_hwaddr) );
 		rcvhwaddr_op( vif->ifname, vif->hwaddr, sizeof(vif->hwaddr), 1);
 	}
+#endif
 	/* add the ip addresses */
 	ipaddr_ops( vsrv, 1 );
 
@@ -840,7 +537,7 @@ static void state_goto_master( vrrp_rt *vsrv )
 		send_gratuitous_arp( vsrv, vsrv->vaddr[i].addr, 1 );
 	/* init the struct */
 	VRRP_TIMER_SET( vsrv->adver_timer, vsrv->adver_int );
-	vsrv->state = VRRP_STATE_MAST;
+	vsrv->oper_state= VRRP_STATE_MAST;
 }
 
 /****************************************************************
@@ -851,12 +548,13 @@ static void state_goto_master( vrrp_rt *vsrv )
 static void state_leave_master( vrrp_rt *vsrv, int advF )
 {
 	uint32_t	addr[1024];
-	vrrp_if		*vif = &vsrv->vif;
+#if 0
 	/* restore the original MAC addresses */
 	if( !vsrv->no_vmac ){
 		hwaddr_set( vif->ifname, vif->hwaddr, sizeof(vif->hwaddr) );
 		rcvhwaddr_op( vif->ifname, vif->hwaddr, sizeof(vif->hwaddr), 0);
 	}
+#endif
 	/* remove the ip addresses */
 	ipaddr_ops( vsrv, 0 );
 
@@ -891,7 +589,7 @@ static void state_init( vrrp_rt *vsrv )
 	} else {
 		int delay = 3*vsrv->adver_int + VRRP_TIMER_SKEW(vsrv);
 		VRRP_TIMER_SET( vsrv->ms_down_timer, delay );
-		vsrv->state = VRRP_STATE_BACK;
+		vsrv->oper_state= VRRP_STATE_BACK;
 	}
 }
 
@@ -945,7 +643,7 @@ static void state_mast( vrrp_rt *vsrv )
 		VRRP_TIMER_SET(vsrv->adver_timer,vsrv->adver_int);
 	}else if( hd->priority > vsrv->priority ||
 			(hd->priority == vsrv->priority &&
-			ntohl(iph->saddr) > vsrv->vif.ipaddr) ){
+			ntohl(iph->saddr) > vsrv->ipaddr) ){
 		int delay	= 3*vsrv->adver_int + VRRP_TIMER_SKEW(vsrv);
 be_backup:
 		VRRP_TIMER_SET( vsrv->ms_down_timer, delay );
@@ -956,47 +654,12 @@ be_backup:
 }
 
 /****************************************************************
- NAME	: open_sock				00/02/07 12:40:00
- AIM	: open the socket and join the multicast group.
- REMARK	:
-****************************************************************/
-static int open_sock( vrrp_rt *vsrv )
-{
-	struct	ip_mreq req;
-	int	ret;
-	/* open the socket */
-	vsrv->sockfd = socket( AF_INET, SOCK_RAW, IPPROTO_VRRP );
-	if( vsrv->sockfd < 0 ){
-		int	err = errno;
-		VRRP_LOG(("cant open raw socket. errno=%d. (try to run it as root)\n"
-						, err));
-		return -1;
-	}
-	/* join the multicast group */
-	memset( &req, 0, sizeof (req));
-	req.imr_multiaddr.s_addr = htonl(INADDR_VRRP_GROUP);
-	req.imr_interface.s_addr = htonl(vsrv->vif.ipaddr);
-	ret = setsockopt (vsrv->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-			       (char *) &req, sizeof (struct ip_mreq));
-	if( ret < 0 ){
-		int	err = errno;
-		VRRP_LOG(("cant do IP_ADD_MEMBERSHIP errno=%d\n",err));
-		return -1;
-	}
-	return 0;
-}
-
-/****************************************************************
  NAME	: main					00/02/06 08:48:02
  AIM	:
  REMARK	:
 ****************************************************************/
 int main( int argc, char *argv[] )
 {
-	vrrp_rt	*vsrv = NULL;
-
-	init_virtual_srv(vsrv);
-	/* parse the command line */
 	argc = parse_cmdline(vsrv,argc, argv );
 	if( argc < 0 ) {
 		return -1;
@@ -1011,16 +674,12 @@ int main( int argc, char *argv[] )
 		fprintf(stderr, "try '%s -h' to read the help\n", argv[0]);
 		return -1;
 	}
-	if( open_sock( vsrv ) ){
-		return -1;
-	}
-
 	/* the init is completed */
 	vsrv->initF = 1;
 
 	/* main loop */
 	while( 1 ){
-		switch( vsrv->state ){
+		switch( vsrv->oper_state){
 		case VRRP_STATE_INIT:	state_init( vsrv );	break;
 		case VRRP_STATE_BACK:	state_back( vsrv );	break;
 		case VRRP_STATE_MAST:	state_mast( vsrv );	break;
@@ -1029,4 +688,3 @@ int main( int argc, char *argv[] )
 
 	return(0);
 }
-

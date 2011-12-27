@@ -31,6 +31,7 @@ DHCP:
 
 LIB:
 	make -C $(CODE_DIR)/lib
+#	make -C $(CODE_DIR)/vrrp
 
 
 SWITCH:  lib BRIDGE STP PLATFORM CLI PORT GDD  RSTP VLAN IPV4

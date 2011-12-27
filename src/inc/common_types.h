@@ -8,6 +8,7 @@
 #define ETH_ALEN        6
 
 #define ETHER_ADDR_LEN ETH_ALEN
+#define	ETHER_HDR_LEN  14
 
 #define ETH_P_802_3     0x0001          /* Dummy type for 802.3 frames  */
 #define ETH_P_AX25      0x0002          /* Dummy protocol id for AX.25  */

@@ -12,6 +12,26 @@
 #include "cli.h"
 #include "ifmgmt.h"
 
+void cli_vrrp_enable (char *args[])
+{
+
+}
+
+void cli_vrrp_set_priority (char *args[])
+{
+
+}
+
+void cli_vrrp_set_adv_timer (char *args[])
+{
+
+}
+
+void cli_show_vrrp (void)
+{
+
+}
+
 int vrrp_cli_init (void)
 {
 	install_cmd_handler ("vrrp <vrid> ip <ipaddress>", "Enables VRRP on an interface", cli_vrrp_enable, 
@@ -21,9 +41,8 @@ int vrrp_cli_init (void)
 			     cli_vrrp_set_priority, "vrrp <INT> priority <INT>", INTERFACE_MODE);
 
 	install_cmd_handler ("vrrp <vrid> timers advertise <interval-secs>", 
-			      "Configures the interval between successive advertisements by the master virtual router"
+			      "Configures the interval between successive advertisements by the master virtual router",
 			     cli_vrrp_set_adv_timer, "vrrp <INT> timers advertise <INT>", INTERFACE_MODE);
 
 	install_cmd_handler ("show vrrp", "Displays interface", cli_show_vrrp, NULL, USER_EXEC_MODE);
 }
-

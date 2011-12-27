@@ -27,9 +27,9 @@ int vrrp_init (void)
 	return 0;
 }
 
-static void init_vsrv(vrrp_rt *vsrv)
+static inline void init_vsrv(vrrp_rt *vsrv)
 {
-	vsrv->state	= VRRP_STATE_INIT;
+	vsrv->oper_state = VRRP_STATE_INIT;
 	vsrv->priority	= VRRP_PRIO_DFL;
 	vsrv->adver_int	= VRRP_ADVER_DFL*VRRP_TIMER_HZ;
 	vsrv->preempt	= VRRP_PREEMPT_DFL;
@@ -52,5 +52,9 @@ int vrrp_init_instance (int vrid)
 
 	memset (vsrv, 0, sizeof(*vsrv));
 
-	init_vsrv (vrid)
+	vsrv->vrid = vrid;
+
+	init_vsrv (vrid);
+
+	return 0;
 }

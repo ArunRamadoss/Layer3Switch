@@ -13,8 +13,7 @@ REMARK      :
 #ifndef __VRRP_H__
 #define __VRRP_H__
 
-/* system include */
-#include <stdint.h>
+#include "common_types.h"
 
 #define MAX_VRRP_INSTANCE   255
 
@@ -52,12 +51,11 @@ typedef struct {	/* rfc2338.5.1 */
 #define VRRP_PID_FORMAT	"vrrpd_%s_%d.pid"	/* pid file format */
 
 typedef struct {	/* parameters per interface -- rfc2338.6.1.1 */
-	int		auth_type;	/* authentification type. VRRP_AUTH_* */
-	uint8_t		auth_data[8];	/* authentification data */
-
+#if 0
 	uint32_t	ipaddr;		/* the address of the interface */
 	char		hwaddr[6];	/* WORK: lame hardcoded for ethernet !!!! */
 	char		*ifname;	/* the device name for this ipaddr */
+#endif
 } vrrp_if;
 
 typedef struct {
@@ -66,32 +64,26 @@ typedef struct {
 } vip_addr;
 
 typedef struct {	/* parameters per virtual router -- rfc2338.6.1.2 */
-	int	vrid;		/* virtual id. from 1(!) to 255 */
-	int	priority;	/* priority value */
-	int	naddr;		/* number of ip addresses */
-	vip_addr *vaddr;	/* point on the ip address array */
-	int	adver_int;	/* delay between advertisements(in sec) */	
-
-#if 0	/* dynamically calculated */
-	double	skew_time;	/* skew Master_Down_Interval. (256-Prio)/256 */	
-	int	mast_down_int;	/* interval for backup to declare master down*/
-#endif
-	int	preempt;	/* true if a higher prio preempt a lower one */
-
-	int	state;		/* internal state (init/backup/master) */
-	int	wantstate;	/* user explicitly wants a state (back/mast) */
-
-	int	sockfd;		/* the socket descriptor */
-	
-	int	initF;		/* true if the struct is init */
-	
-	int	no_vmac;	/* dont handle the virtual MAC --rfc2338.7.3 */
-
+	int	    vrid;		/* virtual id. from 1(!) to 255 */
+	MACADDRESS  vmac;
+	int	    oper_state;		/* internal state (init/backup/master) */
+	int	    admin_state;
+	int	    priority;	/* priority value */
+	int	    naddr;		/* number of ip addresses */
+	vip_addr *  vaddr;	/* point on the ip address array */
+	uint32_t    master_ip;
+	uint32_t    primary_ip;
+	int		auth_type;	/* authentification type. VRRP_AUTH_* */
+	uint8_t		auth_data[8];	/* authentification data */
+	int	    adver_int;	/* delay between advertisements(in sec) */	
+	int	    preempt;	/* true if a higher prio preempt a lower one */
+	int	    wantstate;	/* user explicitly wants a state (back/mast) */
+	int	    initF;		/* true if the struct is init */
+	int	    no_vmac;	/* dont handle the virtual MAC --rfc2338.7.3 */
+	uint32_t    uptime;
 	/* rfc2336.6.2 */
 	uint32_t	ms_down_timer;
 	uint32_t	adver_timer;
-
-	vrrp_if	vif;
 } vrrp_rt;
 
 /* VRRP state machine -- rfc2338.6.4 */
