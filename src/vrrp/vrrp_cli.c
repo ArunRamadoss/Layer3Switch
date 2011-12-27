@@ -14,7 +14,7 @@
 
 void cli_vrrp_enable (char *args[])
 {
-
+	vrrp_create_instance (args[0], cli_get_port (), ip_2_uint32 (args[1], 0));
 }
 
 void cli_vrrp_set_priority (char *args[])

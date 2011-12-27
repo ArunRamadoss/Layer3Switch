@@ -64,8 +64,10 @@ typedef struct {
 } vip_addr;
 
 typedef struct {	/* parameters per virtual router -- rfc2338.6.1.2 */
+	struct  list_head nxt;
 	int	    vrid;		/* virtual id. from 1(!) to 255 */
 	MACADDRESS  vmac;
+	int         port_no;
 	int	    oper_state;		/* internal state (init/backup/master) */
 	int	    admin_state;
 	int	    priority;	/* priority value */

@@ -374,16 +374,6 @@ static int parse_authopt(vrrp_rt *vsrv, char *str)
 
 
 /****************************************************************
- NAME	: parse_cmdline				00/02/06 09:09:11
- AIM	:
- REMARK	:
-****************************************************************/
-static int parse_cmdline( vrrp_rt *vsrv, int argc, char *argv[] )
-{
-	return -1;
-}
-
-/****************************************************************
  NAME	: cfg_add_ipaddr			00/02/06 09:24:08
  AIM	:
  REMARK	:
@@ -658,22 +648,8 @@ be_backup:
  AIM	:
  REMARK	:
 ****************************************************************/
-int main( int argc, char *argv[] )
+int vrrp_state_machine( int argc, char *argv[] )
 {
-	argc = parse_cmdline(vsrv,argc, argv );
-	if( argc < 0 ) {
-		return -1;
-	}
-	/* add the virtual server ip */
-	for( ; argv[argc]; argc++ ){
-		uint32_t ipaddr = inet_addr( argv[argc] );
-		cfg_add_ipaddr( vsrv, ntohl(ipaddr) );
-	}
-	/* check if the minimal configuration has been done */
-	if( chk_min_cfg( vsrv ) ){
-		fprintf(stderr, "try '%s -h' to read the help\n", argv[0]);
-		return -1;
-	}
 	/* the init is completed */
 	vsrv->initF = 1;
 
