@@ -2030,6 +2030,8 @@ bstp_create(struct bstp_state *bs, struct bstp_port *bp, uint16_t ifp)
 	bstp_set_port_tc(bp, BSTP_TCSTATE_INACTIVE);
 	bp->bp_path_cost = bstp_calc_path_cost(bp);
 	list_add_tail(&bp->bp_next, &bs->bs_bplist);
+	if (get_port_oper_state (ifp) == IF_UP)
+		bstp_enable (bp);
 	BSTP_UNLOCK(bs);
 	return (0);
 }
