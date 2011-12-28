@@ -28,6 +28,13 @@ enum {
     TSK_RESUME = 4
 }TASK_SIG;
 
+struct pstat
+{
+	long unsigned int utime;
+	long unsigned int stime;
+	long unsigned int tcpu;
+};
+
 
 typedef struct __task_tm__ {
     struct list_head     tsk_node;
@@ -51,6 +58,7 @@ typedef struct __task_tm__ {
     int             curr_evt;
     int             prev_evt;
     int             sig;
+    struct pstat    cpu_stats;
     void            *(*start_routine)(void*);
     void            (*exit_routine)();
     void            *tskarg;

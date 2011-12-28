@@ -87,6 +87,8 @@ int main (int argc, char **argv)
 
 	start_cli_task ();
 
+	init_task_cpu_usage_moniter_timer ();
+
 	while (1) {
 		sleep (-1);
 	}

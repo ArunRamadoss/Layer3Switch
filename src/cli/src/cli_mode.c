@@ -15,6 +15,7 @@ int end_mode (char **args);
 extern int show_users (void);
 int process_logout();
 int process_lock (void);
+extern void show_cpu_usage (void);
 
 struct modes {
 	int mode;
@@ -123,6 +124,7 @@ int del_user (char **args)
 	user_del (args[0]);
 }
 
+
 int cli_init_cmds (void)
 {
 	install_cmd_handler ("exit", "Exit the application", exit_mode, NULL, ALL_CONFIG_MODE);
@@ -135,4 +137,5 @@ int cli_init_cmds (void)
 	install_cmd_handler ("quit", "quit the application", do_exit, NULL, ALL_CONFIG_MODE);
 	install_cmd_handler ("end", "Changes to the exec mode", end_mode, NULL, ALL_CONFIG_MODE);
 	install_cmd_handler ("configure terminal", "configuration mode", change_config_mode, NULL, USER_EXEC_MODE);
+	install_cmd_handler ("show task-cpu", "Displays the CPU usage of the task", show_cpu_usage, NULL, USER_EXEC_MODE);
 }

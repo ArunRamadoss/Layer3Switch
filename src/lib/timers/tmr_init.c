@@ -188,6 +188,8 @@ int timer_restart  (TIMER_T *p)
 
 	INIT_LIST_HEAD (&apptimer->elist);
 
+	p->apptimer = apptimer;
+
 	calc_time (apptimer);
 
 	find_tmr_slot_and_place (apptimer);

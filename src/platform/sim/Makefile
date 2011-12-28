@@ -4,12 +4,14 @@
 include ../../build/make.h
 
 SIM_CODE_DIR = $(CODE_DIR)/platform/sim
+HAL_CODE_DIR = $(CODE_DIR)/platform/hal
 SIM_INC_DIR =  $(SIM_CODE_DIR)/inc -I$(COMMON_INC)
 SIM_SRCC_DIR = $(SIM_CODE_DIR)/src
 SIM_OBJ_DIR = $(SIM_CODE_DIR)/obj
 
 SIM_OBJS += $(SIM_OBJ_DIR)/main_sim.o
 SIM_OBJS += $(SIM_OBJ_DIR)/tm_virtl.o
+SIM_OBJS += $(SIM_OBJ_DIR)/hal_cli.o
 
 all: all-before  obj $(SIM_OBJS) sim.o all-after
 
@@ -24,6 +26,10 @@ $(SIM_OBJ_DIR)/main_sim.o: $(SIM_SRCC_DIR)/main_sim.c
 
 $(SIM_OBJ_DIR)/tm_virtl.o: $(SIM_SRCC_DIR)/tm_virtl.c
 	$(CC) -c $(COMPILATION_SWITCH) $(SIM_SRCC_DIR)/tm_virtl.c -o $(SIM_OBJ_DIR)/tm_virtl.o $(CFLAGS) -I$(SIM_INC_DIR)
+
+$(SIM_OBJ_DIR)/hal_cli.o: $(HAL_CODE_DIR)/hal_cli.c
+	$(CC) -c $(COMPILATION_SWITCH) $(HAL_CODE_DIR)/hal_cli.c -o $(SIM_OBJ_DIR)/hal_cli.o $(CFLAGS) -I$(SIM_INC_DIR)
+
 
 sim.o: $(SIM_OBJS)
 	$(LD) $(LD_FLAGS) -o $(FINAL_OBJ)/sim.o $(SIM_OBJS)

@@ -88,12 +88,11 @@ void dump_task_info ()
     register struct list_head *node = NULL;
     register tmtask_t  *tskinfo = NULL;
 
-    int                 tmp1 = 0, tmp2 = 0, tmp3 = 0;
 
     printf
-        ("\n  Task Name      TaskID       StackSize     TaskState       TaskPrio        Scheduling Alg    TASK PID\n");
+        ("\n  Task Name      TaskID       StackSize(KB)  TaskState       TaskPrio        Scheduling Alg    TASK PID \n");
     printf
-        ("\r  ---------    ----------     ----------   ------------    ------------     ----------------  ---------\n");
+        ("\r  ---------    ----------     ----------    ------------    ------------     ----------------  ---------\n");
 
 
     list_for_each (node, (&tsk_hd))
@@ -101,7 +100,7 @@ void dump_task_info ()
         tskinfo = (tmtask_t *) node;
         printf
             ("%10s     %#x    %8d      %10s     %9d      %15s     %6d\n",
-             tskinfo->task_name, tskinfo->task_id, tskinfo->stksze, 
+             tskinfo->task_name, tskinfo->task_id, tskinfo->stksze / 1024, 
              tsk_state[tskinfo->tsk_state],
              tskinfo->prio, tsk_sched[tskinfo->schedalgo], 
 	     tskinfo->tsk_pid);
@@ -141,6 +140,16 @@ tmtaskid_t tsk_get_tskid (char *tskname)
             return ((tmtask_t *) node)->task_id;
     }
     return -1;
+}
+
+unsigned long tick_start (void)
+{
+	get_ticks ();
+}
+
+void tick_end (unsigned long *p, unsigned long start)
+{
+	*p += (get_ticks () - start);
 }
 
 char               *
