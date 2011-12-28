@@ -3,7 +3,7 @@
 
 include ../build/make.h
 
-VRRP_CODE_DIR = .
+VRRP_CODE_DIR = $(CODE_DIR)/vrrp
 VRRP_INC_DIR =  $(VRRP_CODE_DIR)/../inc -I$(COMMON_INC)
 VRRP_SRCC_DIR = $(VRRP_CODE_DIR)/
 VRRP_OBJ_DIR = $(VRRP_CODE_DIR)/obj

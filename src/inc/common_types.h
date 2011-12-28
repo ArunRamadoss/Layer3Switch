@@ -2,13 +2,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <linux/ip.h>
 
 #define MAX_PORT_NAME 8
 
-#define ETH_ALEN        6
-
-#define ETHER_ADDR_LEN ETH_ALEN
-#define	ETHER_HDR_LEN  14
+#define ETH_ALEN        6               /* Octets in one ethernet addr   */
+#define ETH_HLEN        14              /* Total octets in header.       */
+#define ETH_ZLEN        60              /* Min. octets in frame sans FCS */
+#define ETH_DATA_LEN    1500            /* Max. octets in payload        */
+#define ETH_FRAME_LEN   1514            /* Max. octets in frame sans FCS */
+#define ETH_FCS_LEN     4               /* Octets in the FCS             */
 
 #define ETH_P_802_3     0x0001          /* Dummy type for 802.3 frames  */
 #define ETH_P_AX25      0x0002          /* Dummy protocol id for AX.25  */
@@ -29,6 +32,28 @@
 #define ETH_P_HDLC      0x0019          /* HDLC frames                  */
 #define ETH_P_ARCNET    0x001A          /* 1A for ArcNet :-)            */
 #define ETH_P_DSA       0x001B          /* Distributed Switch Arch.     */
+
+/* Ethernet protocol ID's */
+#define ETHERTYPE_PUP           0x0200          /* Xerox PUP */
+#define ETHERTYPE_SPRITE        0x0500          /* Sprite */
+#define ETHERTYPE_IP            0x0800          /* IP */
+#define ETHERTYPE_ARP           0x0806          /* Address resolution */
+#define ETHERTYPE_REVARP        0x8035          /* Reverse ARP */
+#define ETHERTYPE_AT            0x809B          /* AppleTalk protocol */
+#define ETHERTYPE_AARP          0x80F3          /* AppleTalk ARP */
+#define ETHERTYPE_VLAN          0x8100          /* IEEE 802.1Q VLAN tagging */
+#define ETHERTYPE_IPX           0x8137          /* IPX */
+#define ETHERTYPE_IPV6          0x86dd          /* IP protocol version 6 */
+#define ETHERTYPE_LOOPBACK      0x9000          /* used to test interfaces */
+
+
+#define ETHER_ADDR_LEN  ETH_ALEN                 /* size of ethernet addr */
+#define ETHER_TYPE_LEN  2                        /* bytes in type field */
+#define ETHER_CRC_LEN   4                        /* bytes in CRC field */
+#define ETHER_HDR_LEN   ETH_HLEN                 /* total octets in header */
+#define ETHER_MIN_LEN   (ETH_ZLEN + ETHER_CRC_LEN) /* min packet length */
+#define ETHER_MAX_LEN   (ETH_FRAME_LEN + ETHER_CRC_LEN) /* max packet length */
+
 
 #define MAX_PORTS  12 
 
@@ -60,6 +85,33 @@
 #define LLC_SAP_LAR     0xDC            /* LAN Address Resolution       */
 #define LLC_SAP_RM      0xD4            /* Resource Management          */
 #define LLC_SAP_GLOBAL  0xFF            /* Global SAP.                  */
+
+    
+/* ARP protocol HARDWARE identifiers. */
+#define ARPHRD_NETROM   0               /* from KA9Q: NET/ROM pseudo    */
+#define ARPHRD_ETHER    1               /* Ethernet 10Mbps              */
+#define ARPHRD_EETHER   2               /* Experimental Ethernet        */
+#define ARPHRD_AX25     3               /* AX.25 Level 2                */
+#define ARPHRD_PRONET   4               /* PROnet token ring            */
+#define ARPHRD_CHAOS    5               /* Chaosnet                     */
+#define ARPHRD_IEEE802  6               /* IEEE 802.2 Ethernet/TR/TB    */
+#define ARPHRD_ARCNET   7               /* ARCnet                       */
+#define ARPHRD_APPLETLK 8               /* APPLEtalk                    */
+#define ARPHRD_DLCI     15              /* Frame Relay DLCI             */
+#define ARPHRD_ATM      19              /* ATM                          */
+#define ARPHRD_METRICOM 23              /* Metricom STRIP (new IANA id) */
+#define ARPHRD_IEEE1394 24              /* IEEE 1394 IPv4 - RFC 2734    */
+#define ARPHRD_EUI64    27              /* EUI-64                       */
+#define ARPHRD_INFINIBAND 32            /* InfiniBand                   */
+
+/* ARP protocol opcodes. */
+#define ARPOP_REQUEST   1               /* ARP request                  */
+#define ARPOP_REPLY     2               /* ARP reply                    */
+#define ARPOP_RREQUEST  3               /* RARP request                 */
+#define ARPOP_RREPLY    4               /* RARP reply                   */
+#define ARPOP_InREQUEST 8               /* InARP request                */
+#define ARPOP_InREPLY   9               /* InARP reply                  */
+#define ARPOP_NAK       10              /* (ATM)ARP NAK                 */
 
 
 typedef struct mac_addr

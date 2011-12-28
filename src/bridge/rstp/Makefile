@@ -3,7 +3,7 @@
 
 include ../../build/make.h
 
-RSTP_CODE_DIR = .
+RSTP_CODE_DIR = $(CODE_DIR)/bridge/rstp
 RSTP_INC_DIR =  $(RSTP_CODE_DIR)/ -I$(COMMON_INC)
 RSTP_SRCC_DIR = $(RSTP_CODE_DIR)/
 RSTP_OBJ_DIR = $(RSTP_CODE_DIR)/obj

@@ -14,6 +14,7 @@ REMARK      :
 #define __VRRP_H__
 
 #include "common_types.h"
+#include "list.h"
 
 #define MAX_VRRP_INSTANCE   255
 
@@ -113,7 +114,7 @@ typedef struct {	/* parameters per virtual router -- rfc2338.6.1.2 */
 #define VRRP_TIMER_CLR( val ) 		(val) = 0
 #define VRRP_TIMER_IS_RUNNING( val )	(val)
 #define VRRP_TIMER_HZ			1000000
-uint32_t VRRP_TIMER_CLK( void )
+static uint32_t VRRP_TIMER_CLK( void )
 {
 #if 0
 	struct timeval tv;

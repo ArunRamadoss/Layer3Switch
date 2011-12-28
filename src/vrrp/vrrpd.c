@@ -240,7 +240,7 @@ static void vrrp_build_ip( vrrp_rt *vsrv, char *buffer, int buflen )
 	ip->frag_off	= 0;
 	ip->ttl		= VRRP_IP_TTL;
 	ip->protocol	= IPPROTO_VRRP;
-	ip->saddr	= htonl(vsrv->ipaddr);
+	ip->saddr	= htonl(vsrv->primary_ip);
 	ip->daddr	= htonl(INADDR_VRRP_GROUP);
 	/* checksum must be done last */
 	ip->check	= in_csum( (u_short*)ip, ip->ihl*4, 0 );
@@ -303,7 +303,6 @@ static void vrrp_build_pkt( vrrp_rt *vsrv, int prio, char *buffer, int buflen )
 ****************************************************************/
 static int vrrp_send_pkt( vrrp_rt *vsrv, char *buffer, int buflen )
 {
-	len = sendto( fd, buffer, buflen, 0, &from, sizeof(from) );
 }
 
 /****************************************************************
@@ -323,7 +322,6 @@ static int vrrp_send_adv( vrrp_rt *vsrv, int prio )
 	/* alloc the memory */
 	buflen = vrrp_dlt_len(vsrv) + vrrp_iphdr_len(vsrv) + vrrp_hd_len(vsrv);
 	buffer = calloc( buflen, 1 );
-	assert( buffer );
 	/* build the packet  */
 	vrrp_build_pkt( vsrv, prio, buffer, buflen );
 	/* send it */
@@ -378,7 +376,7 @@ static int parse_authopt(vrrp_rt *vsrv, char *str)
  AIM	:
  REMARK	:
 ****************************************************************/
-static void cfg_add_ipaddr( vrrp_rt *vsrv, uint32_t ipaddr )
+void cfg_add_ipaddr( vrrp_rt *vsrv, uint32_t ipaddr )
 {
 	vsrv->naddr++;
 	/* alloc the room */
@@ -388,7 +386,6 @@ static void cfg_add_ipaddr( vrrp_rt *vsrv, uint32_t ipaddr )
 	} else {
 		vsrv->vaddr = malloc( sizeof(*vsrv->vaddr) );
 	}
-	assert( vsrv->vaddr );
 	/* store the data */
 	vsrv->vaddr[vsrv->naddr-1].addr		= ipaddr;
 	vsrv->vaddr[vsrv->naddr-1].deletable	= 0;
@@ -409,7 +406,7 @@ static int chk_min_cfg( vrrp_rt *vsrv )
 		fprintf(stderr, "the virtual id must be set!\n");
 		return -1;
 	}
-	if( vsrv->ipaddr == 0 ){
+	if( vsrv->primary_ip == 0 ){
 		fprintf(stderr, "the interface ipaddr must be set!\n");
 		return -1;
 	}
@@ -433,24 +430,15 @@ static int vrrp_read( vrrp_rt *vsrv, char *buf, int buflen )
 		next = VRRP_MIN( next, delta );
 	}else{	/* here vsrv->ms_down_timer is assumed running */
 		int32_t	delta = VRRP_TIMER_DELTA(vsrv->ms_down_timer);
-		assert( VRRP_TIMER_IS_RUNNING( vsrv->ms_down_timer ) );
 		if( delta < 0 )	delta = 0;
 		next = VRRP_MIN( next, delta );
 	}
-	/* setup the select() */
-	FD_ZERO( &readfds );
-	FD_SET( vsrv->sockfd, &readfds );
-	timeout.tv_sec	= next / VRRP_TIMER_HZ;
-	timeout.tv_usec = next % VRRP_TIMER_HZ;
-//printf( "val %u,%u %u\n", timeout.tv_sec, timeout.tv_usec, next );
-	if( select( vsrv->sockfd + 1, &readfds, NULL, NULL, &timeout ) > 0 ){
-		len = read( vsrv->sockfd, buf, buflen );
+		len = read( vsrv, buf, buflen );
 //		printf("packet received (%d bytes)\n",len);
 		if( vrrp_in_chk( vsrv, (struct iphdr *)buf ) ){
 			printf("bogus packet!\n");
 			len = 0;
 		}
-	}
 	return len;
 }
 
@@ -479,7 +467,12 @@ struct m_arphdr
 	char	buflen	= sizeof(struct m_arphdr)+ETHER_HDR_LEN;
 	struct ether_header 	*eth	= (struct ether_header *)buf;
 	struct m_arphdr	*arph = (struct m_arphdr *)(buf+vrrp_dlt_len(vsrv));
+#if 0
 	char	*hwaddr	= vAddrF ? vrrp_hwaddr : vsrv->hwaddr;
+#else
+
+	char	*hwaddr	= NULL;
+#endif
 	int	hwlen	= ETH_ALEN;
 
 	/* hardcoded for ethernet */
@@ -633,13 +626,13 @@ static void state_mast( vrrp_rt *vsrv )
 		VRRP_TIMER_SET(vsrv->adver_timer,vsrv->adver_int);
 	}else if( hd->priority > vsrv->priority ||
 			(hd->priority == vsrv->priority &&
-			ntohl(iph->saddr) > vsrv->ipaddr) ){
+			ntohl(iph->saddr) > vsrv->primary_ip) ){
 		int delay	= 3*vsrv->adver_int + VRRP_TIMER_SKEW(vsrv);
 be_backup:
 		VRRP_TIMER_SET( vsrv->ms_down_timer, delay );
 		VRRP_TIMER_CLR( vsrv->adver_timer );
 		state_leave_master( vsrv, 0 );
-		vsrv->state	= VRRP_STATE_BACK;
+		vsrv->oper_state	= VRRP_STATE_BACK;
 	}
 }
 
@@ -648,7 +641,7 @@ be_backup:
  AIM	:
  REMARK	:
 ****************************************************************/
-int vrrp_state_machine( int argc, char *argv[] )
+int vrrp_state_machine( vrrp_rt *vsrv )
 {
 	/* the init is completed */
 	vsrv->initF = 1;

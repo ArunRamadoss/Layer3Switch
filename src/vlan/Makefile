@@ -3,7 +3,7 @@
 
 include ../build/make.h
 
-VLAN_CODE_DIR = .
+VLAN_CODE_DIR = $(CODE_DIR)/vlan
 VLAN_INC_DIR =  $(VLAN_CODE_DIR)/../inc -I$(COMMON_INC)
 VLAN_SRCC_DIR = $(VLAN_CODE_DIR)/
 VLAN_OBJ_DIR = $(VLAN_CODE_DIR)/obj

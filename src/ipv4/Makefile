@@ -3,7 +3,7 @@
 
 include ../build/make.h
 
-IPV4_CODE_DIR = .
+IPV4_CODE_DIR = $(CODE_DIR)/ipv4
 IPV4_INC_DIR =  $(IPV4_CODE_DIR)/inc -I$(COMMON_INC)
 IPV4_SRCC_DIR = $(IPV4_CODE_DIR)
 IPV4_OBJ_DIR = $(IPV4_CODE_DIR)/obj

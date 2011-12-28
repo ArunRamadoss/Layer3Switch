@@ -44,5 +44,5 @@ int vrrp_cli_init (void)
 			      "Configures the interval between successive advertisements by the master virtual router",
 			     cli_vrrp_set_adv_timer, "vrrp <INT> timers advertise <INT>", INTERFACE_MODE);
 
-	install_cmd_handler ("show vrrp", "Displays interface", cli_show_vrrp, NULL, USER_EXEC_MODE);
+	install_cmd_handler ("show vrrp", "Displays VRRP information", cli_show_vrrp, NULL, USER_EXEC_MODE);
 }

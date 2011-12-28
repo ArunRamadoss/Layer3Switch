@@ -3,7 +3,7 @@
 
 include ../../build/make.h
 
-SIM_CODE_DIR = .
+SIM_CODE_DIR = $(CODE_DIR)/platform/sim
 SIM_INC_DIR =  $(SIM_CODE_DIR)/inc -I$(COMMON_INC)
 SIM_SRCC_DIR = $(SIM_CODE_DIR)/src
 SIM_OBJ_DIR = $(SIM_CODE_DIR)/obj

@@ -3,7 +3,7 @@
 
 include ../build/make.h
 
-CLI_CODE_DIR = .
+CLI_CODE_DIR = $(CODE_DIR)/cli
 CLI_INC_DIR =  $(CLI_CODE_DIR)/inc -I$(COMMON_INC)
 CLI_SRCC_DIR = $(CLI_CODE_DIR)/src
 CLI_OBJ_DIR = $(CLI_CODE_DIR)/obj

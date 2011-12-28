@@ -2,7 +2,7 @@
 
 include ../build/make.h
 
-DHCP_CODE_DIR = .
+DHCP_CODE_DIR = $(CODE_DIR)/dhcp
 DHCP_INC_DIR =  $(DHCP_CODE_DIR)/inc -I$(COMMON_INC)
 DHCP_SRCC_DIR = $(DHCP_CODE_DIR)
 DHCP_OBJ_DIR = $(DHCP_CODE_DIR)/obj

@@ -2,7 +2,7 @@
 
 include ../build/make.h
 
-GDD_CODE_DIR = .
+GDD_CODE_DIR = $(CODE_DIR)/gdd
 GDD_INC_DIR =  $(GDD_CODE_DIR)/inc -I$(COMMON_INC)
 GDD_SRCC_DIR = $(GDD_CODE_DIR)
 GDD_OBJ_DIR = $(GDD_CODE_DIR)/obj

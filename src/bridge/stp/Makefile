@@ -3,7 +3,7 @@
 
 include ../../build/make.h
 
-STP_CODE_DIR = .
+STP_CODE_DIR = $(CODE_DIR)/bridge/stp
 STP_INC_DIR =  $(STP_CODE_DIR)/../inc -I$(COMMON_INC)
 STP_SRCC_DIR = $(STP_CODE_DIR)/
 STP_OBJ_DIR = $(STP_CODE_DIR)/obj
