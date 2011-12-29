@@ -10,7 +10,7 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "inc.h"
+#include "task.h"
 
 extern struct list_head      tsk_hd;
 

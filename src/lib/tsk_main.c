@@ -10,7 +10,7 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "inc.h"
+#include "task.h"
 
 int                 g_tsks_crtd = 0;
 

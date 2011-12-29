@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include "common_types.h"
-#include "task/inc.h"
+#include "task.h"
 
 extern struct list_head      tsk_hd;
 

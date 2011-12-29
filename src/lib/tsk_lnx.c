@@ -10,14 +10,13 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "inc.h"
+#include "task.h"
 #include <unistd.h>
 #include <sys/syscall.h>
 
 void * tsk_wrap (void *ptskarg);
 
-retval_t
-deinit_tsk_attr (tmtask_t * ptskinfo)
+retval_t deinit_tsk_attr (tmtask_t * ptskinfo)
 {
     pthread_attr_init (&ptskinfo->tsk_attr);
 
