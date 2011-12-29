@@ -10,10 +10,6 @@
 
 #include "inc.h"
 
-void wake_irq (unsigned long irqid);
-
-static unsigned long irq  = 0;
-
 
 #ifdef SFS_WANTED
 #define SYS_MAX_TICKS_IN_SEC    50 /*Since tick timer runs for 20ms: 1 sec = 1000ms (20ms * 50) */
@@ -33,7 +29,6 @@ unsigned int tm_get_ticks_per_second (void)
 	return SYS_MAX_TICKS_IN_SEC;
 }
 
-#ifndef SFS_WANTED
 size_t alloc_size = 0;
 
 void *tm_calloc(size_t nmemb, size_t size)
@@ -89,7 +84,7 @@ void tick_service (void *unused)
 			btm_hlf ();
 	}
 }
-#endif
+
 static inline void timer_rq_init (void)
 {
 	INIT_LIST_HEAD (&expd_tmrs);
@@ -102,9 +97,6 @@ int init_timer_mgr (void)
 
 	timer_rq_init ();
 
-#ifdef SFS_WANTED
-	irq = softirq_create (btm_hlf, 0);
-#else
 	if (task_create ("TMRBHF", 99, TSK_SCHED_RR, 32000,
 	  		  tick_service, NULL, NULL, &btmhlftask_id) == TSK_FAILURE) {
 		return FAILURE;
@@ -115,7 +107,6 @@ int init_timer_mgr (void)
 
 		return FAILURE;
 	}
-#endif
 	while (--i >= 0) {
 		create_sync_lock (&tmrrq.root[i].lock);
 	}
@@ -126,12 +117,7 @@ int init_timer_mgr (void)
 
 void service_timers (void)
 {
-#ifdef SFS_WANTED
-	wake_irq (irq);
-	softirq_wakeup ();
-#else
         if (tm_process_tick_and_update_timers ()) {
 		evt_snd (btmhlftask_id, TMR_SERVE_TIMERS);
 	}
-#endif
 }
