@@ -100,44 +100,72 @@ spanning_8021w_tree_disable (void)
 void
 set_spanning_8021w_bridge_priority (char *args[])
 {
-#if 0
     uint16_t            prio = (uint16_t) atoi (args[0]);
 
-    rstp_set_bridge_priority (prio);
-#endif
+    rstp_set_bridge_priority (prio,cli_get_vlan_id ());
 }
 
 void
 set_spanning_8021w_bridge_hello_time (char *args[])
 {
     int                 hello = atoi (args[0]);
-#if 0
-    rstp_set_bridge_hello_time (hello);
-#endif
+
+    rstp_set_bridge_hello_time (hello, cli_get_vlan_id ());
 }
+
+void
+set_spanning_8021w_bridge_fwd_delay (char *args[])
+{
+    int                 fdly = atoi (args[0]);
+
+    rstp_set_bridge_fdly (fdly, cli_get_vlan_id ());
+}
+
+void
+set_spanning_8021w_bridge_max_age (char *args[])
+{
+    int                 max_age = atoi (args[0]);
+
+    rstp_set_bridge_max_age (max_age, cli_get_vlan_id ());
+}
+
 
 int
 rstp_cli_init_cmd ()
 {
-    install_cmd_handler ("spanning-tree rstp", "Enables rstp Spanning Tree",
+    install_cmd_handler ("spanning-tree rstp", "Enables Rapid Spanning Tree",
                          spanning_8021w_tree_enable, NULL,
                          GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
-    install_cmd_handler ("no spanning-tree rstp", "Disables rstp Spanning Tree",
+    install_cmd_handler ("no spanning-tree rstp", "Disables Rapid Spanning Tree",
                          spanning_8021w_tree_disable, NULL,
                          GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
     install_cmd_handler ("spanning-tree rstp priority <prio>",
-                         "Sets rstp Spanning Priority <0-65535>",
+                         "Sets Rapid Spanning Priority <0-65535>",
                          set_spanning_8021w_bridge_priority,
                          "spanning-tree rstp priority <INT>",
                          GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
     install_cmd_handler ("spanning-tree rstp hello-time <secs>",
-                         "Sets rapid Spanning Hello time <1-10 secs>",
+                         "Sets Rapid Spanning Hello time <1-10 secs>",
                          set_spanning_8021w_bridge_hello_time,
                          "spanning-tree rstp hello-time <INT>",
                          GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+    install_cmd_handler ("spanning-tree rstp forward-delay <secs>",
+                         "Sets Rapid Spanning forward delay <4-30 secs>",
+                         set_spanning_8021w_bridge_fwd_delay,
+                         "spanning-tree rstp forward-delay <INT>",
+                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+    install_cmd_handler ("spanning-tree rstp max-age <secs>",
+                         "Sets Rapid Spanning max age <6-40 secs>",
+                         set_spanning_8021w_bridge_max_age,
+                         "spanning-tree rstp max-age <INT>",
+                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+
     install_cmd_handler ("show rstp", "shows rstp Spanning Tree",
                          show_spanning_tree_8021w, NULL, USER_EXEC_MODE);
 }

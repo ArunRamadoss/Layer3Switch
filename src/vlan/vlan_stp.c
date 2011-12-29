@@ -55,6 +55,8 @@ int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 			}
 		}	
 
+		bstp_init (p->rstp_instance);
+
 		if (p->stp_instance) {
 			stp_set_state (p->stp_instance, 0);
 		}

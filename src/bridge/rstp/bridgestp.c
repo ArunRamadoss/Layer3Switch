@@ -1368,10 +1368,6 @@ bstp_set_htime(struct bstp_state *bs, int t)
 	/* convert seconds to ticks */
 	t *=  BSTP_TICK_VAL;
 
-	/* value can only be changed in leagacy stp mode */
-	if (bs->bs_protover != BSTP_PROTO_STP)
-		return (-1);
-
 	if (t < BSTP_MIN_HELLO_TIME || t > BSTP_MAX_HELLO_TIME)
 		return (-1);
 
@@ -1694,7 +1690,6 @@ static void
 bstp_ifupdstatus(struct bstp_state *bs, struct bstp_port *bp)
 {
 	uint16_t ifp = bp->bp_ifp;
-	int error = 0;
 
 	BSTP_LOCK_ASSERT(bs);
 
@@ -1896,22 +1891,6 @@ bstp_reinit(struct bstp_state *bs)
 
 	BSTP_LOCK_ASSERT(bs);
 
-	if (list_empty(&bs->bs_bplist)) {
-		/* Set the bridge and root id (lower bits) to zero */
-		bs->bs_bridge_pv.pv_dbridge_id =
-		    ((uint64_t)bs->bs_bridge_priority) << 48;
-		bs->bs_bridge_pv.pv_root_id = bs->bs_bridge_pv.pv_dbridge_id;
-		bs->bs_root_pv = bs->bs_bridge_pv;
-		/* Disable any remaining ports, they will have no MAC address */
-		list_for_each_entry(bp, &bs->bs_bplist, bp_next) {
-			bp->bp_infois = BSTP_INFO_DISABLED;
-			bstp_set_port_role(bp, BSTP_ROLE_DISABLED);
-		}
-
-		stop_timer (bs->bs_bstpcallout);
-		return;
-	}
-
 	get_bridge_mac_address (&addr);
 
 	bs->bs_bridge_pv.pv_dbridge_id =
@@ -1967,7 +1946,6 @@ bstp_attach(struct bstp_state *bs, struct bstp_cb_ops *cb, uint16_t vlan_id)
 	getmicrotime(&bs->bs_last_tc_time);
 
 #endif
-	bstp_init (bs);
 }
 
 void
@@ -1984,9 +1962,6 @@ void
 bstp_init(struct bstp_state *bs)
 {
 	BSTP_LOCK(bs);
-
-	setup_timer (&bs->bs_bstpcallout, bstp_tick, bs);
-
 	bs->bs_running = 1;
 	bstp_reinit(bs);
 	BSTP_UNLOCK(bs);
@@ -2236,4 +2211,90 @@ struct bstp_port * rstp_get_port_info (uint16_t port)
 int rstp_is_root_bridge (const struct bstp_state * br)
 {
 	return bstp_same_bridgeid (br->bs_root_pv.pv_root_id, br->bs_bridge_pv.pv_root_id);
+}
+
+struct bstp_state * rstp_get_this_bridge_entry (uint16_t vlan_id)
+{
+	struct bstp_state *p = NULL;
+
+	if (vlan_id == VLAN_INVALID_ID) {
+		return &rstp_global_instance;
+	}
+
+	list_for_each_entry(p, &bstp_list, bs_list) {
+		if (p->vlan_id == vlan_id)
+			return p;
+	}
+	
+	return NULL;
+}
+
+void rstp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	bstp_set_priority (pinst, newprio);
+}
+
+inline int bridge_timer_relation (int fdelay, int max_age, int hello)
+{
+	/* To support interoperability with legacy Bridges, 
+   	   a Bridge shall enforce the following relationships
+  	   2 × (Bridge_Forward_Delay – 1.0 seconds) >= Bridge_Max_Age
+	   Bridge_Max_Age >= 2 × (Bridge_Hello_Time + 1.0 seconds)
+	*/
+
+	if (((2 * (fdelay -1)) < max_age) ||  (max_age < (2 * (hello + 1))))
+	{
+                printf("Violates (2xFwdDly-1) >= MaxAge >= (2xHello+1)\n");
+		return -1;
+	}
+	return 0;
+}
+void rstp_set_bridge_hello_time (uint32_t hello, uint16_t vlan_id)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!bridge_timer_relation (pinst->bs_bridge_fdelay, pinst->bs_bridge_max_age, hello))
+		bstp_set_htime (pinst, hello);
+}
+
+void rstp_set_bridge_fdly (uint32_t fdly, uint16_t vlan_id)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!bridge_timer_relation (fdly, pinst->bs_bridge_max_age, pinst->bs_bridge_htime))
+		bstp_set_fdelay (pinst, fdly);
+}
+
+void rstp_set_bridge_max_age (uint32_t max_age, uint16_t vlan_id)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!bridge_timer_relation (pinst->bs_bridge_fdelay, max_age, pinst->bs_bridge_htime))
+		bstp_set_maxage (pinst, max_age);
 }

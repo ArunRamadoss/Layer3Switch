@@ -91,6 +91,20 @@ void set_spanning_bridge_hello_time (char *args[])
  	stp_set_bridge_hello_time (hello, cli_get_vlan_id ());
 }
 
+void set_spanning_bridge_fdly (char *args[])
+{
+	int fdly = atoi(args[0]);
+
+ 	stp_set_bridge_forward_delay (fdly, cli_get_vlan_id ());
+}
+
+void set_spanning_bridge_max_age (char *args[])
+{
+	int max_age = atoi(args[0]);
+
+ 	stp_set_bridge_max_age (max_age, cli_get_vlan_id ());
+}
+
 int stp_cli_init_cmd (void)
 {
 	install_cmd_handler ("spanning-tree", "Enables Spanning Tree", 
@@ -108,6 +122,17 @@ int stp_cli_init_cmd (void)
                               "Sets Spanning Hello time <1-10 secs>", 
                               set_spanning_bridge_hello_time, "spanning-tree hello-time <INT>", 
 			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+	install_cmd_handler ("spanning-tree forward-delay <secs>", 
+                              "Sets Spanning foward delay  <4-30 secs>", 
+                              set_spanning_bridge_fdly, "spanning-tree forward-delay <INT>", 
+			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+	install_cmd_handler ("spanning-tree max-age <secs>", 
+                              "Sets Spanning max age <6-40 secs>", 
+                              set_spanning_bridge_max_age, "spanning-tree max-age <INT>", 
+			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
 	install_cmd_handler ("show spanning-tree", "shows Spanning Tree", 
                               show_spanning_tree, NULL, USER_EXEC_MODE);
 }

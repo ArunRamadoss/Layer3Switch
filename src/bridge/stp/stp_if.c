@@ -146,18 +146,64 @@ void stp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
 
 int stp_set_bridge_hello_time (int hello , uint16_t vlan_id)
 {
-
-	/*FIXME:Need to handle the other timer params here*/
 	struct stp_instance *br = get_this_bridge_entry (vlan_id);
 
 	if (!br)	
+	{
+		printf("Spanning tree not enabled\n");
 		return -1;
+	}
+
+	if (bridge_timer_relation (br->bridge_forward_delay, br->bridge_max_age, hello))
+		return -1;
+
 	br->bridge_hello_time = hello;
 
 	if (stp_is_root_bridge (br)) {
 		br->hello_time = br->bridge_hello_time;
 	}
 	
+	return 0;
+}
+
+int stp_set_bridge_forward_delay (int fwd_dly , uint16_t vlan_id)
+{
+	struct stp_instance *br = get_this_bridge_entry (vlan_id);
+
+	if (!br)	
+	{
+		printf("Spanning tree not enabled\n");
+		return -1;
+	}
+
+	if (bridge_timer_relation (fwd_dly, br->bridge_max_age, br->bridge_hello_time))
+		return -1;
+
+	br->bridge_forward_delay = fwd_dly;
+
+	if (stp_is_root_bridge(br))
+		br->forward_delay = fwd_dly;
+
+	return 0;
+}
+
+int stp_set_bridge_max_age (int max_age , uint16_t vlan_id)
+{
+	struct stp_instance *br = get_this_bridge_entry (vlan_id);
+
+	if (!br)	
+	{
+		printf("Spanning tree not enabled\n");
+		return -1;
+	}
+
+	if (bridge_timer_relation (br->bridge_forward_delay, max_age, br->bridge_hello_time))
+		return -1;
+
+	br->bridge_max_age = max_age;
+	if (stp_is_root_bridge(br))
+		br->max_age = max_age;
+
 	return 0;
 }
 
