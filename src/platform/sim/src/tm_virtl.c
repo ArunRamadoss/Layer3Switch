@@ -15,9 +15,12 @@
 #include <stdint.h>
 #include <getopt.h>
 #include <netdb.h>
+#include <asm/types.h>
+#include <linux/if_ether.h>  /* The L2 protocols */
 #include "list.h"
 #include "types_sim.h"
 
+#define ARPHRD_ETHER    1
 
 #define VERSION "0.1"
 
@@ -38,6 +41,7 @@ typedef struct inst {
 #pragma pack(pop)   /* restore original alignment from stack */
 
 static int32_t  sockid = 0;
+static int32_t  sockid_pkt = 0;
 static uint32_t tm_virt_ip = 0;
 static uint32_t tm_ifindex = 0;
 static uint32_t tm_inst = 0;
@@ -95,6 +99,8 @@ void send_packet (void *buf, uint16_t port, int len)
 {
 	char pkt[MAX_MTU];
 
+	tx_pkt_for_capture (buf, len);
+
 	memset (pkt, 0, MAX_MTU);
 
 	pkt[0] = tm_inst;
@@ -122,6 +128,24 @@ void tx_pkt (void *buf, int len)
 	return;
 }
 
+void tx_pkt_for_capture (uint8_t *buf, int len) 
+{
+	struct sockaddr_ll socket_address;
+
+	memset (&socket_address, 0, sizeof(socket_address));
+
+	socket_address.sll_family   = PF_PACKET;	
+	socket_address.sll_protocol = htons(ETH_P_ALL);	
+	socket_address.sll_ifindex  = tm_ifindex;
+	socket_address.sll_pkttype  = PACKET_HOST;
+	socket_address.sll_halen    = ETH_ALEN;		
+
+        if (sendto (sockid_pkt, buf, len, 0,(struct sockaddr *)&socket_address,
+                                sizeof(socket_address)) < 0) {
+		;
+        }
+	return;
+}
 
 int ifname_info (char *ifname)
 {
@@ -179,6 +203,21 @@ int create_communication_channel (void)
 	}
 	return  0;
 }
+
+int create_raw_sock_for_pkt_capture (void)
+{
+	struct sockaddr_in si_me;
+
+	memset((char *) &si_me, 0, sizeof(si_me));
+
+	if ((sockid_pkt =socket(AF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0) {
+		perror ("SOCKET");
+		return -1;
+	}
+
+	return  0;
+}
+
 int rcv_pkt (void *buf)
 {
 	int len = 0;
@@ -201,4 +240,6 @@ int parse_cmdline (int argc, char *argv[])
 	ifname_info (tm_ifname);
 
 	create_communication_channel ();	
+
+	create_raw_sock_for_pkt_capture ();
 }
