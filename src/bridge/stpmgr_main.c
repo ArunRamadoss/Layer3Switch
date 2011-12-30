@@ -40,11 +40,6 @@ int stpmgr_init (void)
 		return -1;
 	}
 
-        if (stp_Q_pool_id < 0) {
-                debug_stp ("Mem pool creation failed !\n");
-                return -1;
-        }
-
 	task_create ("STPMGR", 3, 3, 32000, stpmgr_task, NULL, NULL, &tid);
 }
 

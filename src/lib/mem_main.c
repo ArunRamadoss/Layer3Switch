@@ -45,12 +45,12 @@ struct mem_info {
 };
 
 
-void * alloc_mem (size_t size);
+static void * alloc_mem (size_t size);
 static inline void free_mem(void *mem);
-struct mem_info * get_next_free_mcb (int *memid);
-struct mem_info * get_mem_info (int memid);
-int build_free_mem_blk_list (struct mem_info *m);
-int add_to_mcb (struct mem_info *m);
+static struct mem_info * get_next_free_mcb (int *memid);
+static struct mem_info * get_mem_info (int memid);
+static int build_free_mem_blk_list (struct mem_info *m);
+static int add_to_mcb (struct mem_info *m);
 void *tm_calloc(size_t nmemb, size_t size);
 
 static struct list_head hd_mcb;
@@ -126,13 +126,13 @@ int mem_pool_delete (int pool_id)
 	return 0;
 }	
 
-int add_to_mcb (struct mem_info *m)
+static int add_to_mcb (struct mem_info *m)
 {
 	list_add_tail (&m->n, &hd_mcb);
 	return 0;
 }
 
-int build_free_mem_blk_list (struct mem_info *m) 
+static int build_free_mem_blk_list (struct mem_info *m) 
 {
 	int i = 0;
 	char **mblk = NULL;
@@ -154,7 +154,7 @@ int build_free_mem_blk_list (struct mem_info *m)
 	return 0;
 }
 
-struct mem_info * get_next_free_mcb (int *memid)
+static struct mem_info * get_next_free_mcb (int *memid)
 {
 	/*XXX: Re-implement this function*/
 	static int i = 0;
@@ -168,7 +168,7 @@ struct mem_info * get_next_free_mcb (int *memid)
 	return p;
 }
 
-struct mem_info * get_mem_info (int memid)
+static struct mem_info * get_mem_info (int memid)
 {
 	struct list_head *head = &hd_mcb;
 	struct list_head *p = NULL;
@@ -239,7 +239,7 @@ invalid_address:
 }
 
 /* alloc_mem  is the final routine to allocate memory*/
-void * alloc_mem (size_t size)
+static void * alloc_mem (size_t size)
 {
 	return (void *) tm_calloc (1, size);
 }

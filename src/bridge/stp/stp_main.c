@@ -84,7 +84,7 @@ int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p)
 	
 	if (stp_init_stp_instance (new, vlan_id) < 0) {
 		debug_stp ("STP Instance Creation failed ");
-		free_blk (new);
+		tm_free (new);
 		return -1;
 	}
 

@@ -23,7 +23,7 @@ typedef struct fdb_entry {
 }fdb_t;
 
 /*************** Prototypes **************************/
-void aging_timer_expired (void);
+void aging_timer_expired (void *);
 int fdb_mac_hash(const unsigned char *mac);
 static int fdb_delete_entry (MACADDRESS mac, int32_t portno);
 static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static);
@@ -157,7 +157,7 @@ int delete_age_out_entires (fdb_t *p)
 	}
 }
 
-void aging_timer_expired (void)
+void aging_timer_expired (void *unused)
 {
 	hash_walk (fdb_hash_table, delete_age_out_entires); 
 	mod_timer (ageing_timer, tbridge.dot1dTpAgingTime);

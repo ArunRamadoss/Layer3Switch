@@ -239,4 +239,4 @@ enum STP_DEF_VALUES {
 static const uint8_t br_group_address[ETH_ALEN] = { 0x01, 0x80, 0xc2, 
                                               0x00, 0x00, 0x00 };
 
-
+#include "libproto.h"
