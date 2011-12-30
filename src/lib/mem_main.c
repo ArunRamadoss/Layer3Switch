@@ -34,14 +34,14 @@
 
 struct mem_info {
 	struct list_head n;
+	char     pool_name[MAX_POOL_NAME];
 	void  *  saddr,  *  eaddr;
 	void   **addr_blks;
 	int      memid;
-	char     pool_name[MAX_POOL_NAME];
 	int      nblks;
 	int      useblks;
 	int      fblks;
-	size_t   size;
+	int      size;
 };
 
 
