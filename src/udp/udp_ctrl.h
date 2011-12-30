@@ -22,9 +22,9 @@ typedef struct udp_ctrl_blk
 	struct list_head   sock_pkt_hd;
 	uint32_t           ipaddr;
 	uint32_t           ripaddr;
-	int                sock;
+	int32_t            sock;
+	uint32_t	   family;
 	uint16_t           sport;
 	uint16_t           dport;
-	uint8_t		   family;
 }udpctrlblk_t;
 

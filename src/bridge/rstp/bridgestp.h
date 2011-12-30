@@ -259,8 +259,8 @@ struct bstp_timer {
 
 struct bstp_pri_vector {
 	uint64_t		pv_root_id;
-	uint32_t		pv_cost;
 	uint64_t		pv_dbridge_id;
+	uint32_t		pv_cost;
 	uint16_t		pv_dport_id;
 	uint16_t		pv_port_id;
 };
@@ -279,7 +279,7 @@ struct bstp_config_unit {
 	uint8_t		cu_learning;
 	uint8_t		cu_forwarding;
 	uint8_t		cu_role;
-};
+}__attribute__ ((__packed__));
 
 struct bstp_tcn_unit {
 	uint8_t		tu_message_type;
@@ -335,7 +335,7 @@ struct bstp_port {
 	uint8_t			bp_rcvdtcn;
 	uint32_t		bp_forward_transitions;
 	uint8_t			bp_txcount;
-};
+}__attribute__ ((__packed__));
 
 /*
  * Software state for each bridge STP.
@@ -368,7 +368,7 @@ struct bstp_state {
 	bstp_state_cb_t		bs_state_cb;
 	bstp_rtage_cb_t		bs_rtage_cb;
 	TIMER_ID            *	bs_bstpcallout;
-};
+}__attribute__ ((__packed__));
 
 #ifdef LOCK
 #define	BSTP_LOCK_INIT(_bs)	mtx_init(&(_bs)->bs_mtx, "bstp", NULL, MTX_DEF)

@@ -21,4 +21,4 @@ DEBUG_FLAGS = -g -DDEBUG
 LD = ld
 LD_FLAGS = -r
 VERSION= 0.1
-CFLAGS = $(DEBUG_FLAGS) -Wall -Wsign-compare -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wchar-subscripts -Wcast-qual
+CFLAGS = $(DEBUG_FLAGS) -Wall -Wsign-compare -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wchar-subscripts -Wcast-qual -Wpadded

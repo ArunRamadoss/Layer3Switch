@@ -76,7 +76,7 @@ int mem_pool_create (char *name, size_t size, int n_blks, int flags)
  		  as per machine aligenment*/
 		align += ((MACHINE_ALIGNEMENT - align));
 		bytes +=  align;
-		warn ("Memory is not aligned");
+	//	warn ("Memory is not aligned");
 	}
 
 	mcb = get_next_free_mcb (&memid); /*XXX:Dynamic or Static - What to do*/

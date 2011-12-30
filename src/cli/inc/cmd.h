@@ -12,7 +12,7 @@ struct cli {
 	char hostname[MAX_PMP_LEN];
 	char prmpt_prev[MAX_PMP_LEN];
 	char username[MAX_USER_NAME];
-};
+}__attribute__ ((__packed__));
 
 typedef struct cmds {
 	struct rb_node rlist; 

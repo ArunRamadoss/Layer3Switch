@@ -34,8 +34,8 @@ struct ether_hdr
 typedef void pkt_t;
 
 struct pkt_q {
-	pkt_t    *pkt;
-	size_t  len;
-	uint16_t port;
+	void    *pkt;
+	uint32_t len;
+	uint32_t port;
 };
 

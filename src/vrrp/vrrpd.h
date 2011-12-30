@@ -87,7 +87,7 @@ typedef struct {	/* parameters per virtual router -- rfc2338.6.1.2 */
 	/* rfc2336.6.2 */
 	uint32_t	ms_down_timer;
 	uint32_t	adver_timer;
-} vrrp_rt;
+}__attribute__ ((__packed__)) vrrp_rt;
 
 /* VRRP state machine -- rfc2338.6.4 */
 #define VRRP_STATE_INIT	1	/* rfc2338.6.4.1 */

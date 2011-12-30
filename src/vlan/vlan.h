@@ -30,13 +30,13 @@ struct vlan_static_entry {
 };
 
 struct dot1q_port_vlan_entry {
+	uint32_t   gvrp_failed_registrations;
 	int32_t    port;
+	MACADDRESS gvrp_last_pdu_origin;
 	uint16_t   pvid;
 	uint8_t    acceptable_frametype;
 	uint8_t    ingress_filtering;
 	uint8_t    gvrp_status;
-	uint32_t   gvrp_failed_registrations;
-	MACADDRESS gvrp_last_pdu_origin;
 	uint8_t    restricted_vlan_registration;
 };
 

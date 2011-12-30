@@ -4,7 +4,6 @@ typedef struct ifentry {
         int32_t   ifType;
         int32_t   ifMtu;   
         int32_t   ifSpeed;
-        MACADDRESS ifPhysAddress;  
         int32_t   ifAdminStatus;
         int32_t   ifOperStatus;
         uint32_t  ifLastChange; 
@@ -18,7 +17,8 @@ typedef struct ifentry {
         uint32_t  ifOutDiscards;   
         uint32_t  ifOutErrors;    
 	struct stp_port_entry *pstp_info;
-}port_t;
+        MACADDRESS ifPhysAddress;  
+}__attribute__ ((__packed__))port_t;
 
 extern port_t port_cdb[];
 

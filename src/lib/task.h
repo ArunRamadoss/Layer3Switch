@@ -63,7 +63,7 @@ struct pstat
 
 typedef struct __task_tm__ {
     struct list_head     tsk_node;
-    char            task_name[MAX_TASK_NAME + 1];
+    char            task_name[MAX_TASK_NAME + 2];
     tmtaskid_t       task_id;
 #if 0
     tmsemid_t       sem_id; /*Currently not used */

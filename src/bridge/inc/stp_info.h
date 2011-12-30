@@ -53,21 +53,17 @@ enum STP_PROTO_SPEC {
 #define debug_stp(fmt)   if (1) printf("STP: %s", fmt);
 
 struct stp_instance {
+	int64_t     tolpolgy_changes;
 	struct list_head next;
 	struct list_head port_list;
-	uint16_t   vlan_id;
 	int32_t     protocol_spec;
 	int32_t     stp_enabled;
 	int32_t     priority;
 	TIMESTMP    timesinceTC;
-	int64_t     tolpolgy_changes;
 	BRIDGEID    designated_root;
 	BRIDGEID    bridge_id;
-	int32_t     root_path_cost;
-	PORT        root_port;
 	TIMEOUT     max_age;
 	TIMEOUT     hello_time;
-	int32_t     hold_time;
 	TIMEOUT     forward_delay;
 	TIMEOUT     bridge_max_age;
 	TIMEOUT     bridge_hello_time;
@@ -75,30 +71,34 @@ struct stp_instance {
         TIMER_ID    hello_timer;
         TIMER_ID    tcn_timer;
         TIMER_ID    topology_change_timer;
+	int32_t     root_path_cost;
+	int32_t     hold_time;
+	PORT        root_port;
+	uint16_t   vlan_id;
         uint8_t     topology_change;
         uint8_t     topology_change_detected;
 };
 
 struct stp_port_entry {
+        uint64_t    fwdtransitions;
 	struct list_head list;
 	struct stp_instance *br;
-        PORT        port_no;
         int32_t     priority;
         int32_t     state;
-        TRUTH       enabled;
-        BRIDGEID    designated_root;
         int32_t     designated_cost;
-        BRIDGEID    designated_bridge;
-        uint16_t    designated_port;
-	uint16_t    port_id;
-        uint64_t    fwdtransitions;
         int32_t     path_cost;
+        BRIDGEID    designated_root;
+        BRIDGEID    designated_bridge;
         TIMER_ID    forward_delay_timer;
         TIMER_ID    hold_timer;
         TIMER_ID    message_age_timer;
+        uint16_t    designated_port;
+	uint16_t    port_id;
+        PORT        port_no;
 	uint8_t     topology_change_ack;
         uint8_t	    config_pending;
 	uint8_t     is_own_bpdu;
+        uint8_t     enabled;
 };
 
 #pragma pack(push)  /* push current alignment to stack */
