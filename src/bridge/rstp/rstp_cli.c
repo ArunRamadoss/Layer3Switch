@@ -129,6 +129,99 @@ set_spanning_8021w_bridge_max_age (char *args[])
     rstp_set_bridge_max_age (max_age, cli_get_vlan_id ());
 }
 
+void set_spanning_8021w_port_path_cost (char *args[])
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+	uint32_t path_cost = atoi (args[1]);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	if (path_cost > BSTP_MAX_PATH_COST)
+	{
+		printf ("Invaild Rapid spanning tree port path-cost. Valid range 0-%d\n", 
+			BSTP_MAX_PATH_COST);
+		return;
+	}
+
+	bstp_set_path_cost (p, path_cost);
+}
+
+void set_spanning_8021w_port_prio (char *args[])
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+	uint32_t prio = atoi (args[1]);
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	if (prio > BSTP_MAX_PORT_PRIORITY)
+	{
+		printf ("Invaild spanning tree port priority. Valid Range 0-240\n");
+		return;
+	}
+
+	bstp_set_port_priority (p, prio);
+}
+
+
+void set_spanning_8021w_port_admin_edge (char *args[])
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	bstp_set_edge (p, 1);
+}
+
+void set_spanning_8021w_port_admin_p2p (char *args[])
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	bstp_set_ptp (p, 1);
+}
+
+
 
 int
 rstp_cli_init_cmd ()
@@ -165,6 +258,25 @@ rstp_cli_init_cmd ()
                          "spanning-tree rstp max-age <INT>",
                          GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
+    install_cmd_handler ("spanning-tree rstp ethernet <port> path-cost <cost>", 
+                         "Sets Rapid Spanning ports path cost <0 – 200000000>", 
+                          set_spanning_8021w_port_path_cost, "spanning-tree rstp ethernet <INT> path-cost <INT>", 
+			  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+    install_cmd_handler ("spanning-tree rstp ethernet <port> priority <prio>", 
+                         "Sets Rapid Spanning port priority <0 – 255>", 
+                          set_spanning_8021w_port_prio, "spanning-tree rstp ethernet <INT> priority <INT>", 
+ 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+    install_cmd_handler ("spanning-tree rstp ethernet <port> admin-edge-port", 
+                         "Sets Rapid Spanning port as edge port", 
+                          set_spanning_8021w_port_admin_edge, "spanning-tree rstp ethernet <INT> admin-edge-port", 
+ 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+    install_cmd_handler ("spanning-tree rstp ethernet <port> admin-pt2pt", 
+                         "Sets Rapid Spanning port link as point 2 point", 
+                          set_spanning_8021w_port_admin_p2p, "spanning-tree rstp ethernet <INT> admin-pt2pt", 
+ 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
     install_cmd_handler ("show rstp", "shows rstp Spanning Tree",
                          show_spanning_tree_8021w, NULL, USER_EXEC_MODE);

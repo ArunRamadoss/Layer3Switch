@@ -1368,8 +1368,11 @@ bstp_set_htime(struct bstp_state *bs, int t)
 	/* convert seconds to ticks */
 	t *=  BSTP_TICK_VAL;
 
-	if (t < BSTP_MIN_HELLO_TIME || t > BSTP_MAX_HELLO_TIME)
+	if (t < BSTP_MIN_HELLO_TIME || t > BSTP_MAX_HELLO_TIME) {
+                printf ("Invaild Rapid Spanning tree hello time. Valid range %d-%d\n",
+                        BSTP_MIN_HELLO_TIME, BSTP_MAX_HELLO_TIME);
 		return (-1);
+	}
 
 	BSTP_LOCK(bs);
 	bs->bs_bridge_htime = t;
@@ -1384,8 +1387,11 @@ bstp_set_fdelay(struct bstp_state *bs, int t)
 	/* convert seconds to ticks */
 	t *= BSTP_TICK_VAL;
 
-	if (t < BSTP_MIN_FORWARD_DELAY || t > BSTP_MAX_FORWARD_DELAY)
+	if (t < BSTP_MIN_FORWARD_DELAY || t > BSTP_MAX_FORWARD_DELAY) {
+                printf ("Invaild Rapid Spanning tree forward delay. Valid range %d-%d\n",
+                        BSTP_MIN_FORWARD_DELAY, BSTP_MAX_FORWARD_DELAY);
 		return (-1);
+	}
 
 	BSTP_LOCK(bs);
 	bs->bs_bridge_fdelay = t;
@@ -1400,9 +1406,11 @@ bstp_set_maxage(struct bstp_state *bs, int t)
 	/* convert seconds to ticks */
 	t *= BSTP_TICK_VAL;
 
-	if (t < BSTP_MIN_MAX_AGE || t > BSTP_MAX_MAX_AGE)
+	if (t < BSTP_MIN_MAX_AGE || t > BSTP_MAX_MAX_AGE) {
+                printf ("Invaild Rapid Spanning tree Max age. Valid range %d-%d\n",
+                        BSTP_MIN_MAX_AGE, BSTP_MAX_MAX_AGE);
 		return (-1);
-
+	}
 	BSTP_LOCK(bs);
 	bs->bs_bridge_max_age = t;
 	bstp_reinit(bs);
@@ -1463,7 +1471,11 @@ int
 bstp_set_priority(struct bstp_state *bs, int pri)
 {
 	if (pri < 0 || pri > BSTP_MAX_PRIORITY)
+	{
+                printf ("Invaild Rapid Spanning tree Priority. Valid range %d-%d\n",
+                        0, BSTP_MAX_PRIORITY);
 		return (-1);
+	}
 
 	/* Limit to steps of 4096 */
 	pri -= pri % 4096;
@@ -1481,7 +1493,11 @@ bstp_set_port_priority(struct bstp_port *bp, int pri)
 	struct bstp_state *bs = bp->bp_bs;
 
 	if (pri < 0 || pri > BSTP_MAX_PORT_PRIORITY)
+	{
+                printf ("Invaild Rapid Spanning tree pory Priority. Valid range %d-%d\n",
+                        0, BSTP_MAX_PORT_PRIORITY);
 		return (-1);
+	}
 
 	/* Limit to steps of 16 */
 	pri -= pri % 16;
@@ -1499,7 +1515,11 @@ bstp_set_path_cost(struct bstp_port *bp, uint32_t path_cost)
 	struct bstp_state *bs = bp->bp_bs;
 
 	if (path_cost > BSTP_MAX_PATH_COST)
+	{
+                printf ("Invaild Rapid Spanning tree port pathcost. Valid range %d-%d\n",
+                        0, BSTP_MAX_PATH_COST);
 		return (-1);
+	}
 
 	/* STP compat mode only uses 16 bits of the 32 */
 	if (bp->bp_protover == BSTP_PROTO_STP && path_cost > 65535)
@@ -2207,6 +2227,21 @@ struct bstp_port * rstp_get_port_info (uint16_t port)
 	return NULL;
 
 }
+
+struct bstp_port * rstp_get_port_entry (struct bstp_state *pinst, uint16_t port)
+{
+	struct bstp_port *p = NULL;
+
+	if (!pinst)
+		return NULL;
+
+	list_for_each_entry(p, &pinst->bs_bplist, bp_next) {
+		if (p->bp_ifp == port)
+			return p;
+	}
+	return NULL;
+}
+
 
 int rstp_is_root_bridge (const struct bstp_state * br)
 {

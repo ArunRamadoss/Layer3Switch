@@ -153,6 +153,19 @@ int  stp_delete_port (struct stp_instance *stp_inst, int port)
 	return 0;
 }
 
+struct stp_port_entry *  stp_get_port_info (struct stp_instance *stp_inst, int port)
+{
+	struct stp_port_entry *p = NULL;
+
+	list_for_each_entry(p, &stp_inst->port_list, list) {
+		if (p->port_no == port) {
+			return p;
+		}
+	}
+	return NULL;
+}
+
+
 struct stp_port_entry * stp_get_port_entry (uint16_t port)
 {
 	struct stp_port_entry *p = NULL;

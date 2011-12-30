@@ -154,6 +154,12 @@ int stp_set_bridge_hello_time (int hello , uint16_t vlan_id)
 		return -1;
 	}
 
+	if (hello < STP_MIN_HELLO_TIME || hello > STP_MAX_HELLO_TIME)
+	{
+		printf ("Invaild Spanning tree Hello time. Valid range %d-%d\n",
+			STP_MIN_HELLO_TIME, STP_MAX_HELLO_TIME);
+		return -1;
+	}
 	if (bridge_timer_relation (br->bridge_forward_delay, br->bridge_max_age, hello))
 		return -1;
 
@@ -173,6 +179,13 @@ int stp_set_bridge_forward_delay (int fwd_dly , uint16_t vlan_id)
 	if (!br)	
 	{
 		printf("Spanning tree not enabled\n");
+		return -1;
+	}
+
+	if (fwd_dly < STP_MIN_FORWARD_DELAY || fwd_dly > STP_MAX_FORWARD_DELAY)
+	{
+		printf ("Invaild Spanning tree Forward Delay. Valid range %d-%d\n",
+			STP_MIN_FORWARD_DELAY, STP_MAX_FORWARD_DELAY);
 		return -1;
 	}
 
@@ -197,6 +210,13 @@ int stp_set_bridge_max_age (int max_age , uint16_t vlan_id)
 		return -1;
 	}
 
+	if (max_age < STP_MIN_MAX_AGE || max_age > STP_MAX_MAX_AGE)
+	{
+		printf ("Invaild Spanning tree max age. Valid range %d-%d\n",
+			STP_MIN_MAX_AGE, STP_MAX_MAX_AGE);
+		return -1;
+	}
+
 	if (bridge_timer_relation (br->bridge_forward_delay, max_age, br->bridge_hello_time))
 		return -1;
 
@@ -207,9 +227,8 @@ int stp_set_bridge_max_age (int max_age , uint16_t vlan_id)
 	return 0;
 }
 
-void stp_set_port_priority(uint16_t port , uint8_t newprio)
+void stp_set_port_priority (struct stp_port_entry *p, uint8_t newprio)
 {
-	struct stp_port_entry *p = stp_get_port_entry (port);
         uint16_t new_port_id ;
 
 	if (!p)
@@ -230,10 +249,8 @@ void stp_set_port_priority(uint16_t port , uint8_t newprio)
         }
 }
 
-void stp_set_path_cost(uint16_t port, uint32_t path_cost)
+void stp_set_path_cost(struct stp_port_entry *p, uint32_t path_cost)
 {
-        struct stp_port_entry *p = stp_get_port_entry (port);
-
         if (!p)
                 return;
                 

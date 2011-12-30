@@ -105,6 +105,59 @@ void set_spanning_bridge_max_age (char *args[])
  	stp_set_bridge_max_age (max_age, cli_get_vlan_id ());
 }
 
+void set_spanning_bridge_port_path_cost (char *args[])
+{
+	struct stp_instance *br = get_this_bridge_entry (cli_get_vlan_id ());
+	struct stp_port_entry *p = NULL;
+	uint32_t path_cost = atoi (args[1]);
+
+	if (!br)
+	{
+		printf ("Spanning-tree not enabled\n");
+		return;
+	}
+
+	if (!(p = stp_get_port_info (br, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	if (path_cost < STP_MIN_PATH_COST || path_cost > STP_MAX_PATH_COST)
+	{
+		printf ("Invaild spanning tree port path-cost. Valid range %d-%d\n", 
+			STP_MIN_PATH_COST, STP_MAX_PATH_COST);
+		return;
+	}
+
+	stp_set_path_cost (p, path_cost);
+}
+
+void set_spanning_bridge_port_prio (char *args[])
+{
+	struct stp_instance *br = get_this_bridge_entry (cli_get_vlan_id ());
+	struct stp_port_entry *p = NULL;
+	uint32_t prio = atoi (args[1]);
+
+	if (!br)
+	{
+		printf ("Spanning-tree not enabled\n");
+		return;
+	}
+
+	if (!(p = stp_get_port_info (br, atoi (args[0]))))
+	{
+		printf ("Invalid Port Number\n");
+	}
+
+	if (prio > STP_MAX_PORT_PRIORITY)
+	{
+		printf ("Invaild spanning tree port priority. Valid Range 0-240\n");
+		return;
+	}
+
+	stp_set_port_priority (p, prio);
+}
+
 int stp_cli_init_cmd (void)
 {
 	install_cmd_handler ("spanning-tree", "Enables Spanning Tree", 
@@ -131,6 +184,16 @@ int stp_cli_init_cmd (void)
 	install_cmd_handler ("spanning-tree max-age <secs>", 
                               "Sets Spanning max age <6-40 secs>", 
                               set_spanning_bridge_max_age, "spanning-tree max-age <INT>", 
+			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+	install_cmd_handler ("spanning-tree ethernet <port> path-cost <cost>", 
+                              "Sets Spanning ports path cost <0 – 200000000>", 
+                              set_spanning_bridge_port_path_cost, "spanning-tree ethernet <INT> path-cost <INT>", 
+			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
+
+	install_cmd_handler ("spanning-tree ethernet <port> priority <prio>", 
+                              "Sets Spanning port priority <0 – 255>", 
+                              set_spanning_bridge_port_prio, "spanning-tree ethernet <INT> priority <INT>", 
 			      GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
 
 	install_cmd_handler ("show spanning-tree", "shows Spanning Tree", 
