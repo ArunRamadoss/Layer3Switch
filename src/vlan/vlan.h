@@ -60,3 +60,14 @@ struct dot1q_port_vlan_entry {
 	}
 
 
+int vlan_create_stp_port (struct vlan_static_entry *p, int port_no);
+struct vlan_static_entry * get_vlan_entry (uint16_t vlan_id);
+int vlan_add_port (int vlan_id, int port_no , int type);
+int vlan_del_port (int vlan_id, int port_no, int type);
+int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode);
+int vlan_create_vlan (uint16_t vlan_id);
+int vlan_cli_init_cmd (void);
+int vlan_delete_stp_port (void *stp_inst, int port_no);
+int vlan_get_this_bridge_stp_mode  (int vlanid);
+void * vlan_get_spanning_tree_instance (int vlan_id, int mode);
+int vlan_spanning_tree_disable_on_vlan (int vlan_id, int mode);

@@ -6,10 +6,15 @@
 #include "vlan.h"
 
 #define debug_vlan printf
-int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p);
-int stp_delete_stp_instance (struct stp_instance *p);
-int  stp_create_port (struct stp_instance *stp_inst, int port);
-int stp_set_state (struct stp_instance *br, int state);
+int stp_create_stp_instance (uint16_t vlan_id, void **p);
+int stp_delete_stp_instance (void *p);
+int  stp_create_port (void *stp_inst, int port);
+int stp_set_state (void *br, int state);
+int rstp_create_instance (uint16_t vlan_id, void **p);
+int  rstp_create_port (void *bs, int port);
+int  stp_delete_port (void *stp_inst, uint32_t port);
+int bstp_init (void *bs);
+int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode);
 
 int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode)
 {

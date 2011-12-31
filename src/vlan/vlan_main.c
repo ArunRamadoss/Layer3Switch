@@ -1,6 +1,3 @@
-
-#include <stdio.h>
-#include <stdint.h>
 #include "common_types.h"
 #include "list.h"
 #include "vlan.h"
@@ -10,8 +7,12 @@
 static struct list_head vlan_db;
 static int vlan_mem_id = -1;
 
-int vlan_create_vlan (uint16_t vlan_id);
+/******************************************************************/
+int vlan_init (void);
 struct vlan_static_entry * get_vlan_entry (uint16_t vlan_id);
+int vlan_create_default_vlan (int vlan_id);
+int show_vlan (void);
+/*****************************************************************/
 
 int vlan_init (void)
 {
@@ -30,7 +31,7 @@ int vlan_init (void)
 		return -1;
 	}
 
-	vlan_cli_init_cmd ();
+	return 0;
 }
 
 int vlan_create_default_vlan (int vlan_id)
@@ -162,4 +163,5 @@ int show_vlan (void)
 		count++;
 	}
 	printf ("Total Vlans : %d\n",count);
+	return 0;
 }

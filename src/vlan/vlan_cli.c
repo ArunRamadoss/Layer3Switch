@@ -1,7 +1,11 @@
 #include "common_types.h"
+#include "vlan.h"
 #include "cli.h"
 
+int set_vlan (char **args);
 extern int show_vlan (void);
+int change_vlan_mode (char **args);
+int set_tagged__port_to_vlan (char **args);
 
 int set_vlan (char **args)
 {
@@ -36,5 +40,6 @@ int vlan_cli_init_cmd (void)
 	install_cmd_handler ("show vlan", "shows vlan info", 
                               show_vlan, NULL, USER_EXEC_MODE);
 #endif
+	return 0;
 }
 
