@@ -221,7 +221,7 @@ int reset_tty(void)
 	return 0;   
 }
 
-int install_cmd_handler (char *cmd, char *help, int (*handler) (void *), char *syntax, int priv_mode)
+int install_cmd_handler (const char *cmd, const char *help, void (*handler) (void *), const char *syntax, int priv_mode)
 {
 	cmdnode_t *new = NULL;
 	cmd_t *p = NULL;
@@ -313,8 +313,8 @@ void write_string (char *str)
 void handle_segfault (int signo)
 {
 	write_string ("ooppppssssssss ....! System crashed ..."
-			"Am going to sleep for 100 secs debug the image\n");
-	sleep (100);
+			"Am going to sleep for 10 secs debug the image\n");
+	sleep (10);
 	exit (0);
 }
 
