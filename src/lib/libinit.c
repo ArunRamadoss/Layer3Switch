@@ -20,6 +20,11 @@
 #include <unistd.h>
 #include <sys/times.h>
 
+int tmlib_init (void);
+int mem_init (void);
+int  msg_Q_init (void);
+int init_timer_mgr (void);
+
 int tmlib_init (void)
 {
 	mem_init ();
@@ -28,10 +33,5 @@ int tmlib_init (void)
 
 	init_timer_mgr ();
 
-	return 0;
-}
-
-int tmlib_deinit (void)
-{
 	return 0;
 }

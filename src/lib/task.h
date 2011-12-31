@@ -13,9 +13,10 @@
 
 #ifndef TASK_H
 #define TASK_H
-#include <stdio.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include "list.h"
 
 #define  MIN_THREAD_STACK_SIZE   20000  /*should be atleast PTHREAD_STACK_MIN (bits/local_lim.h)*/
@@ -95,10 +96,10 @@ extern tmtask_t            gtskinfo[];
 retval_t init_tsk (tmtask_t *);
 retval_t start_tsk(tmtask_t *, tmtaskid_t *);
 retval_t deinit_tsk (tmtask_t *);
-void fill_tsk_info (char *tskname, int tsk_prio, int sched_alg, int stk_size,
+void fill_tsk_info (const char *tskname, int tsk_prio, int sched_alg, int stk_size,
                void *(*start_routine) (void *), void (*exit_routine) (),
                void *arg, tmtask_t * ptskinfo);
-retval_t validate_tsk_params (char *tskname, int sched_alg, int stk_size,
+retval_t validate_tsk_params (const char *tskname, int sched_alg, int stk_size,
                      void *(*start_routine) (void *));
 void tsk_dealloc (void *dptr);
 void * tsk_alloc (int size, int cnt);
@@ -108,16 +109,8 @@ tmtaskid_t tsk_get_tskid (char *tskname);
 retval_t deinit_tsk_attr (tmtask_t * ptskinfo);
 retval_t deinit_tsk_mtx_and_cond (tmtask_t * ptskinfo);
 retval_t start_task (tmtask_t * ptskinfo, tmtaskid_t * ptskid);
-tmtaskid_t tsk_selfid ();
-void tsk_cancel (tmtaskid_t task_id);
 retval_t init_tsk_mtx_and_cond (tmtask_t * ptskinfo);
 retval_t init_tsk_attr (tmtask_t * ptskinfo);
 tmtask_t * get_tsk_info (char *tskname, tmtaskid_t tskid);
-
-inline unsigned int tm_get_ticks_per_second (void);
-void *tm_calloc(size_t nmemb, size_t size);
-void * tm_malloc (size_t size);
-void tm_free (void *p , size_t size);
-inline unsigned int tm_get_ticks_per_second (void); 
-inline unsigned int tm_convert_msec_to_tick (unsigned int msecs);
+pid_t get_tsk_pid ();
 #endif

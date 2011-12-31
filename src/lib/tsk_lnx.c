@@ -10,10 +10,10 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "task.h"
-#include <unistd.h>
-#include <sys/syscall.h>
+#include "common_types.h"
 
+tmtaskid_t tsk_selfid ();
+tmtask_t           * get_tsk_info_frm_id (tmtaskid_t tskid);
 void * tsk_wrap (void *ptskarg);
 
 retval_t deinit_tsk_attr (tmtask_t * ptskinfo)
@@ -47,8 +47,7 @@ start_task (tmtask_t * ptskinfo, tmtaskid_t * ptskid)
     return TSK_SUCCESS;
 }
 
-tmtaskid_t
-tsk_selfid ()
+tmtaskid_t tsk_selfid ()
 {
     return pthread_self ();
 }
@@ -82,7 +81,7 @@ init_tsk_attr (tmtask_t * ptskinfo)
     pthread_attr_setstacksize (&ptskinfo->tsk_attr, ptskinfo->stksze);
 
     pthread_attr_setschedpolicy (&ptskinfo->tsk_attr, ptskinfo->schedalgo);
-#if 0
+
     param.sched_priority = ptskinfo->prio;
 
     pthread_attr_setschedparam (&ptskinfo->tsk_attr, &param);
@@ -98,12 +97,10 @@ init_tsk_attr (tmtask_t * ptskinfo)
                                           PTHREAD_INHERIT_SCHED);
             break;
     }
-#endif
     return TSK_SUCCESS;
 }
 
-void
-tsk_delay (int secs, int nsecs)
+void tsk_delay (int secs, int nsecs)
 {
     struct timespec     delay_tmr;
 
@@ -114,20 +111,17 @@ tsk_delay (int secs, int nsecs)
     nanosleep (&delay_tmr, NULL);
 }
 
-void
-tsk_sleep (int secs)
+void tsk_sleep (int secs)
 {
     sleep (secs);
 }
 
-void
-tsk_mdelay (int msecs)
+void tsk_mdelay (int msecs)
 {
     usleep (msecs * 1000);
 }
 
-pid_t
-get_tsk_pid ()
+pid_t get_tsk_pid ()
 {
     return syscall (SYS_gettid);
 }

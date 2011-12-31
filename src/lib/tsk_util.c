@@ -10,12 +10,17 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "task.h"
+#include "common_types.h"
+
+tmtask_t           * get_tsk_info_frm_id (tmtaskid_t tskid);
+int str_len_validate (char *tskname, int len);
+void dump_task_info (void);
+
 
 extern struct list_head      tsk_hd;
 
 retval_t
-validate_tsk_params (char *tskname, int sched_alg, int stk_size,
+validate_tsk_params (const char *tskname, int sched_alg, int stk_size,
                      void *(*start_routine) (void *))
 {
 
@@ -48,17 +53,9 @@ validate_tsk_params (char *tskname, int sched_alg, int stk_size,
 }
 
 int
-my_str_len (char *str)
-{
-    if (!str)
-        return 0;
-    return strlen (str);
-}
-
-int
 str_len_validate (char *tskname, int len)
 {
-    int                 strln = my_str_len (tskname);
+    int                 strln = strlen (tskname);
 
     if (strln > 0 && strln <= len)
         return 1;
@@ -78,13 +75,10 @@ tmtask_t * get_tsk_info (char *tskname, tmtaskid_t tskid)
     return NULL;
 }
 
-void dump_task_info ()
+void dump_task_info (void)
 {
-    char               *tsk_sched[] = { "OTHER", "FIFO", "Round Robin" };
-    char               *tsk_state[] =
-        { "NOT_CREATED", "TSK_RUNNING", "TSK_SLEEPING", "TSK_SUSPENDED" };
-    char               *tsk_sched_inherit[] =
-        { "PTHREAD_INHERIT_SCHED", "PTHREAD_EXPLICIT_SCHED" };
+    const char  *tsk_sched[] = { "OTHER", "FIFO", "Round Robin" };
+    const char  *tsk_state[] = { "NOT_CREATED", "TSK_RUNNING", "TSK_SLEEPING", "TSK_SUSPENDED" };
     register struct list_head *node = NULL;
     register tmtask_t  *tskinfo = NULL;
 
@@ -100,7 +94,7 @@ void dump_task_info ()
         tskinfo = (tmtask_t *) node;
         printf
             ("%10s     %#x    %8d      %10s     %9d      %15s     %6d\n",
-             tskinfo->task_name, tskinfo->task_id, tskinfo->stksze / 1024, 
+             tskinfo->task_name, (uint32_t)tskinfo->task_id, tskinfo->stksze / 1024, 
              tsk_state[tskinfo->tsk_state],
              tskinfo->prio, tsk_sched[tskinfo->schedalgo], 
 	     tskinfo->tsk_pid);
@@ -144,7 +138,7 @@ tmtaskid_t tsk_get_tskid (char *tskname)
 
 unsigned long tick_start (void)
 {
-	get_ticks ();
+	return get_ticks ();
 }
 
 void tick_end (unsigned long *p, unsigned long start)
@@ -152,8 +146,7 @@ void tick_end (unsigned long *p, unsigned long start)
 	*p += (get_ticks () - start);
 }
 
-char               *
-get_tsk_name (tmtaskid_t tskid)
+char * get_tsk_name (tmtaskid_t tskid)
 {
     register struct list_head *node;
 
@@ -162,11 +155,10 @@ get_tsk_name (tmtaskid_t tskid)
         if (((tmtask_t *) node)->task_id == tskid)
             return ((tmtask_t *) node)->task_name;
     }
-    return "INVALID_TASK_ID";
+    return NULL;
 }
 
-tmtask_t           *
-get_tsk_info_frm_id (tmtaskid_t tskid)
+tmtask_t           * get_tsk_info_frm_id (tmtaskid_t tskid)
 {
     register struct list_head *node;
 

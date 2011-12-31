@@ -12,10 +12,10 @@
 
 #define MAX_TIMERS 2000
 
-static inline void timer_rq_init (void);
 static void calc_time (APP_TIMER_T * ptmr);
 static TIMER_T * alloc_timer (void);
 static int alloc_timer_id (void);
+void show_uptime (void);
 
 
 /************* Private Variable Declaration *********************/
@@ -26,11 +26,6 @@ static int indx = 0;
 struct active_timers  tmrrq;
 unsigned  int clk[TIMER_WHEEL];
 /****************************************************************/
-
-int shut_timer_mgr (void)
-{
-	return SUCCESS;
-}
 
 static inline void update_wheel (TIMER_T *p, int wheel)
 {
@@ -76,7 +71,7 @@ static void calc_time (APP_TIMER_T * ptmr)
 	ptmr->timer->exp = tick + clk[TICK];
 }
 
-TIMER_T * start_timer (unsigned int ticks, void *data, void (*handler) (void *), int flags)
+void * start_timer (unsigned int ticks, void *data, void (*handler) (void *), int flags)
 {
 	TIMER_T  *new = NULL;
 	APP_TIMER_T *apptimer = NULL;
@@ -84,7 +79,7 @@ TIMER_T * start_timer (unsigned int ticks, void *data, void (*handler) (void *),
 
 	if ( !(idx = alloc_timer_id ())  || 
              !(new = alloc_timer ())) {
-		return -1;
+		return NULL;
 	}
 
 	new->idx = idx;
@@ -101,7 +96,7 @@ TIMER_T * start_timer (unsigned int ticks, void *data, void (*handler) (void *),
 
 	if (!apptimer) {
 		free_timer (new);
-		return -1;
+		return NULL;
 	}
 
 	apptimer->timer = new;
@@ -116,10 +111,10 @@ TIMER_T * start_timer (unsigned int ticks, void *data, void (*handler) (void *),
 
 	INC_TIMER_COUNT ();
 
-	return new;
+	return (void *)new;
 }
 
-int setup_timer (TIMER_T **p, void (*handler) (void *), void *data)
+int setup_timer (void **p, void (*handler) (void *), void *data)
 {
 	TIMER_T  *new = NULL;
 	int idx = 0;
@@ -138,14 +133,15 @@ int setup_timer (TIMER_T **p, void (*handler) (void *), void *data)
 
 	update_wheel (new, WAIT_TIMERS);
 
-	*p = new;
+	*(TIMER_T **)p = new;
 
 	return 0;
 }
 
-int mod_timer (TIMER_T *p, unsigned int secs)
+int mod_timer (void *timer, unsigned int secs)
 {
 	APP_TIMER_T *apptimer = NULL;
+	TIMER_T  *p = (TIMER_T *)timer;
 
 	if (!p)
 		return -1;
@@ -208,8 +204,10 @@ static int alloc_timer_id (void)
 	return ++indx;
 }
 
-int stop_timer (TIMER_T *p)
+int stop_timer (void *timer)
 {
+	TIMER_T  *p = (TIMER_T *)timer;
+
 	if (p->apptimer && p->is_running) {
 
 		timer_del (p->apptimer, &tmrrq.root[p->wheel]);
@@ -223,10 +221,13 @@ int stop_timer (TIMER_T *p)
 	return 0;
 }
 
-int del_timer (TIMER_T *p)
+int del_timer (void *timer)
 {
+	TIMER_T  *p = (TIMER_T *)timer;
+
 	if (p->apptimer && p->is_running)
 		stop_timer (p);
+	return 0;
 }
 
 static inline TIMER_T * alloc_timer (void)
@@ -303,8 +304,8 @@ void show_uptime (void)
 	printf ("Uptime  %d hrs %d mins %d secs %d ticks\n",get_hrs(), 
 		 get_mins() % 60, get_secs() % 60, get_ticks() % tm_get_ticks_per_second ());
 }
-void tm_test_timers_latency ()
+void tm_test_timers_latency (void *unused)
 {
-	dump_task_info ();
+	show_uptime ();
 	start_timer (1 * tm_get_ticks_per_second (), NULL, tm_test_timers_latency , 0);
 }

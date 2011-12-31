@@ -26,12 +26,14 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "hashlib.h"
+#include "common_types.h"
 #include "jhash.h"
 
-HASH_TABLE * create_hash_table (char *hashname, int buckets, 
+static void flush_hash_table (HASH_TABLE *htbl, void (*free_data) (void *data));
+
+HASH_TABLE * create_hash_table (const char *hashname, int buckets, 
 				int (*cmp)(const uint8_t *list, const uint8_t *key),
-				int  (*index_gen)(char *key), int key_len)
+				int  (*index_gen)(uint8_t *key), int key_len)
 {
 	HASH_TABLE * htable = NULL;
 	
@@ -68,7 +70,7 @@ HASH_TABLE * create_hash_table (char *hashname, int buckets,
 	return htable;
 }
 
-static hash_bucket_t * find_hash_entry (char *key, HASH_TABLE *htbl)
+static hash_bucket_t * find_hash_entry (uint8_t *key, HASH_TABLE *htbl)
 {
 	hash_bucket_t *bkt = NULL;
 	int which_bucket = -1;
@@ -91,7 +93,7 @@ static hash_bucket_t * find_hash_entry (char *key, HASH_TABLE *htbl)
 	return NULL;
 }
 
-void * hash_tbl_lookup (char *key, HASH_TABLE *htbl)
+void * hash_tbl_lookup (uint8_t *key, HASH_TABLE *htbl)
 {
 	hash_bucket_t *pbkt = find_hash_entry (key, htbl);
 
@@ -146,7 +148,7 @@ static int hash_add_entry (uint8_t *string, HASH_TABLE *htbl, void *data)
 	int bucket = -1;
 
 	if (!htbl) 
-		return NULL;
+		return -1;
 
 	if (!(hentry = find_hash_entry (string, htbl))) {
 
@@ -198,14 +200,14 @@ int  hash_tbl_add (uint8_t *key, HASH_TABLE *htbl, void *data)
 	return 0;
 }
 
-int hash_tbl_delete (char *string, HASH_TABLE *htbl, void (*free_data)(void *))
+int hash_tbl_delete (uint8_t *string, HASH_TABLE *htbl, void (*free_data)(void *))
 {
 	if (hash_delete_entry (string, htbl, free_data) < 0) {
 		return -1;
 	}
 	return 0;
 }
-void flush_hash_table (HASH_TABLE *htbl, void (*free_data) (void *data))
+static void flush_hash_table (HASH_TABLE *htbl, void (*free_data) (void *data))
 {
 	int i = -1;
 	hash_bucket_t *bucket = NULL, *hentry = NULL;

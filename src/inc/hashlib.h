@@ -50,8 +50,8 @@ typedef struct hash_table {
 	int  key_len;
 	int nbuckets;			/* How many buckets does this table have. */
 	int nentries;			/* How many entries does this table have. */
-	int (*cmp_func)(char *list, char *key);
-	int (*hash_index_gen) (char *key);
+	int (*cmp_func)(const uint8_t *list, const uint8_t *key);
+	int (*hash_index_gen) (uint8_t *key);
 } HASH_TABLE;
 
 #endif /* _HASHLIB_H */

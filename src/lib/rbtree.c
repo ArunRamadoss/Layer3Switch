@@ -21,6 +21,7 @@
 */
 
 #include <stdio.h>
+#include "common_types.h"
 #include "rbtree.h"
 
 static void __rb_rotate_left(struct rb_node *node, struct rb_root *root)
@@ -380,7 +381,7 @@ struct rb_node *rb_last(const struct rb_root *root)
 	return n;
 }
 
-struct rb_node *rb_next(const struct rb_node *node)
+struct rb_node *rb_next(struct rb_node *node)
 {
 	struct rb_node *parent;
 
@@ -408,7 +409,7 @@ struct rb_node *rb_next(const struct rb_node *node)
 	return parent;
 }
 
-struct rb_node *rb_prev(const struct rb_node *node)
+struct rb_node *rb_prev(struct rb_node *node)
 {
 	struct rb_node *parent;
 

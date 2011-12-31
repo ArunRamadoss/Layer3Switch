@@ -119,3 +119,11 @@ void free_timer_id ();
 int find_tmr_slot_and_place (APP_TIMER_T * ptmr);
 void timer_del (APP_TIMER_T *n, struct rb_root *root);
 void timer_add (APP_TIMER_T *n, struct rb_root *root, int);
+int timer_restart  (TIMER_T *p);
+void update_times (void);
+void service_timers (void);
+unsigned int get_timers_count (void);
+void tm_test_timers_latency (void *);
+void evt_snd (tmtaskid_t tskid, int event);
+int evt_rx (tmtaskid_t tskid, int *pevent, int event);
+

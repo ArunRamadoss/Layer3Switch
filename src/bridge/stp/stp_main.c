@@ -774,7 +774,7 @@ void stp_send_tcn_bpdu(struct stp_port_entry *p)
 	stp_send_bpdu(p, buf, 4);
 }
 
-unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2)
+int compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2)
 {
 	const uint16_t *a = (const uint16_t *) addr1;
 	const uint16_t *b = (const uint16_t *) addr2;

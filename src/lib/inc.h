@@ -30,8 +30,8 @@
 #include <sys/socket.h>    /* socket interface functions  */
 #include <sys/select.h>
 #include <semaphore.h>
+#include "common_types.h"
 #include "list.h"
-#include "task.h"
 #include "rbtree.h"
 #include "tmrtypes.h"
 

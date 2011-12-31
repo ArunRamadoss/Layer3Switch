@@ -138,16 +138,19 @@ static APP_TIMER_T * timer_tree_walk (struct rb_root  *root, unsigned int key, c
 	return NULL;
 }
 
-int timer_pending (TIMER_T *p)
+int timer_pending (void *timer)
 {
+	TIMER_T  *p = (TIMER_T *)timer;
+
         if (!p)
                 return 0;
 
         return p->is_running;
 }
 
-unsigned int timer_get_remaining_time (TIMER_T *p)
+unsigned int timer_get_remaining_time (void *timer)
 {
+	TIMER_T  *p = (TIMER_T *)timer;
 	int t = 0;
 
         if (!p || !p->is_running) {

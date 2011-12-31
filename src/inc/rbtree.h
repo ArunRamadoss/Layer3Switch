@@ -34,7 +34,8 @@
 #ifndef	_LINUX_RBTREE_H
 #define	_LINUX_RBTREE_H
 
-#include <semaphore.h>
+
+#include "common_types.h"
 
 struct rb_node
 {
@@ -88,8 +89,8 @@ extern void rb_augment_erase_end(struct rb_node *node,
 				 rb_augment_f func, void *data);
 
 /* Find logical next and previous nodes in a tree */
-extern struct rb_node *rb_next(const struct rb_node *);
-extern struct rb_node *rb_prev(const struct rb_node *);
+extern struct rb_node *rb_next(struct rb_node *);
+extern struct rb_node *rb_prev(struct rb_node *);
 extern struct rb_node *rb_first(const struct rb_root *);
 extern struct rb_node *rb_last(const struct rb_root *);
 

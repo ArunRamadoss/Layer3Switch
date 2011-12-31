@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <err.h>
+#include "common_types.h"
 #include "list.h"
 
 #define MAX_POOL_NAME         8
@@ -35,8 +36,8 @@
 struct mem_info {
 	struct list_head n;
 	char     pool_name[MAX_POOL_NAME];
-	void  *  saddr,  *  eaddr;
-	void   **addr_blks;
+	uint8_t  *  saddr,  *  eaddr;
+	uint8_t  **addr_blks;
 	int      memid;
 	int      nblks;
 	int      useblks;
@@ -45,6 +46,7 @@ struct mem_info {
 };
 
 
+int mem_init (void);
 static void * alloc_mem (size_t size);
 static inline void free_mem(void *mem);
 static struct mem_info * get_next_free_mcb (int *memid);
@@ -61,7 +63,7 @@ int mem_init (void)
 	return 0;
 }
 
-int mem_pool_create (char *name, size_t size, int n_blks, int flags)
+int mem_pool_create (const char *name, size_t size, int n_blks, int flags)
 {
 	unsigned int bytes = size * n_blks;
 
@@ -135,7 +137,7 @@ static int add_to_mcb (struct mem_info *m)
 static int build_free_mem_blk_list (struct mem_info *m) 
 {
 	int i = 0;
-	char **mblk = NULL;
+	uint8_t **mblk = NULL;
 
 	mblk = alloc_mem (sizeof(void *) * m->nblks);
 
@@ -149,7 +151,7 @@ static int build_free_mem_blk_list (struct mem_info *m)
 		mblk[i] = COMPUTE_ADDR_BLOCK (m->saddr, i, m->size); 
 		++i;
 	}
-	m->addr_blks = (void **)mblk;
+	m->addr_blks = (uint8_t **)mblk;
 
 	return 0;
 }
@@ -216,7 +218,7 @@ int free_blk (int memid, void *addr)
 		return -1;
 	}
 
-	if (!in_range (p->saddr, p->eaddr, p->size, addr)) 
+	if (!in_range (p->saddr, p->eaddr, p->size, (uint8_t *)addr)) 
 		goto invalid_address;
 
 	offset = ((unsigned long)addr - (unsigned long)p->saddr);

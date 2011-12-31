@@ -21,6 +21,9 @@
  */
 
 /* NOTE: Arguments are modified. */
+
+uint32_t jhash_1word(uint32_t a, uint32_t initval);
+
 #define __jhash_mix(a, b, c) \
 { \
   a -= b; a -= c; a ^= (c>>13); \

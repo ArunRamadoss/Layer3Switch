@@ -17,7 +17,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <semaphore.h>
-#include "task.h"
+#include "common_types.h"
 
 int create_sync_lock (sync_lock_t *slock)
 {

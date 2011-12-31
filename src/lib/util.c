@@ -16,7 +16,7 @@ uint32_t ip_2_uint32 (uint8_t *ipaddress, int byte_order)
 
         memset (byte, 0, sizeof(byte));
 
-        sscanf (ipaddress, "%u.%u.%u.%u", &byte[0], &byte[1], &byte[2], &byte[3]);
+        sscanf ((char *)ipaddress, "%u.%u.%u.%u", &byte[0], &byte[1], &byte[2], &byte[3]);
 
         if (byte_order) /*Network*/
                return (byte[0] << 24) | (byte[1] << 16) | (byte[2] << 8) | (byte[3]);

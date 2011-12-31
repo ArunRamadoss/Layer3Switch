@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netpacket/packet.h>
-#include <net/ethernet.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <mqueue.h>
@@ -16,7 +15,6 @@
 #include <getopt.h>
 #include <netdb.h>
 #include <asm/types.h>
-#include <linux/if_ether.h>  /* The L2 protocols */
 #include "list.h"
 #include "types_sim.h"
 

@@ -10,19 +10,17 @@
 
 #include "inc.h"
 
-
-#ifdef SFS_WANTED
-#define SYS_MAX_TICKS_IN_SEC    50 /*Since tick timer runs for 20ms: 1 sec = 1000ms (20ms * 50) */
-#define TICK_TIMER_GRANULARITY  20  /*20 milli secs*/
-#else
 #define SYS_MAX_TICKS_IN_SEC    100 /*Since tick timer runs for 10ms: 1 sec = 1000ms (10ms * 100) */
 #define TICK_TIMER_GRANULARITY  10  /*10 milli secs*/
-#endif
 
 #define MILLISEC_2_NANOSEC(msec)  msec * 1000 * 1000
 
-static int btmhlftask_id = 0;
-static int task_id = 0;
+void * tick_service (void *unused) ;
+void * tick_clock (void *unused);
+int init_timer_mgr (void);
+
+static tmtaskid_t btmhlftask_id = 0;
+static tmtaskid_t task_id = 0;
 
 unsigned int tm_get_ticks_per_second (void) 
 {
@@ -49,7 +47,7 @@ void tm_free (void *p , size_t size)
 	free (p);
 }
 
-void tick_clock (void *unused)
+void * tick_clock (void *unused)
 {
 	struct timespec     req = {0, MILLISEC_2_NANOSEC
 			          (TICK_TIMER_GRANULARITY)};
@@ -71,9 +69,10 @@ void tick_clock (void *unused)
 			update_times (); 
 		}
 	}
+	return NULL;
 }
 
-void tick_service (void *unused) 
+void * tick_service (void *unused) 
 {
 	int evt = 0;
 
@@ -83,6 +82,7 @@ void tick_service (void *unused)
 		if (evt & TMR_SERVE_TIMERS)
 			btm_hlf ();
 	}
+	return NULL;
 }
 
 static inline void timer_rq_init (void)

@@ -27,7 +27,6 @@ void aging_timer_expired (void *);
 int fdb_mac_hash(unsigned char *mac);
 static int fdb_delete_entry (MACADDRESS mac, int32_t portno);
 static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static);
-unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2);
 static fdb_t * fdb_lookup (MACADDRESS mac, int32_t port_no);
 void show_mac_table (char *[]);
 int fdb_init (void); 
@@ -35,7 +34,7 @@ int mac_address_update (MACADDRESS , int32_t , uint16_t );
 int stp_is_mac_learning_allowed (int);
 void display_fdb_entry (void *);
 void delete_age_out_entires (void *);
-
+static void fdb_free_entry (void *fdb);
 /*********************************************************/
 
 /******************* Static Dec  **********************/
@@ -65,7 +64,7 @@ int fdb_init (void)
                                        MAX_FDB_ENTRIES, 0);
 	if (fdb_pool_id < 0) {
 		debug_fdb ("Mem pool creation failed !\n");
-		destroy_hash_table (fdb_hash_table);
+		destroy_hash_table (fdb_hash_table, fdb_free_entry);
 		return -1;
 	}
 

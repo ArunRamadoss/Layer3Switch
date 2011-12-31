@@ -17,7 +17,7 @@
 #include <mqueue.h>
 #include <time.h>
 #include "list.h"
-#include "task.h"
+#include "common_types.h"
 
 
 #define MAX_MSG_Q   10
@@ -44,9 +44,12 @@ struct Q {
 	struct list_head msg_list;
 };
 
+static int get_qid (void);
+int  msg_Q_init (void);
+
 static struct Q Queue[MAX_MSG_Q];
 
-int get_qid (void)
+static int get_qid (void)
 {
 	int i = MAX_MSG_Q;
 

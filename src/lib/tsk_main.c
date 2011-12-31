@@ -10,13 +10,15 @@
  *  2 of the License, or (at your option) any later version.
  */
 
-#include "task.h"
+#include "common_types.h"
 
 int                 g_tsks_crtd = 0;
 
 LIST_HEAD(tsk_hd);
 
 tmtaskid_t          curtskid;
+
+void * tsk_wrap (void *ptskarg);
 
 #define istsk_selftsk(ptsk)    (ptsk->task_id  == tsk_selfid ())
 
@@ -117,7 +119,7 @@ retval_t deinit_tsk (tmtask_t * ptskinfo)
 	return TSK_SUCCESS;
 }
 
-void fill_tsk_info (char *tskname, int tsk_prio, int sched_alg, int stk_size,
+void fill_tsk_info (const char *tskname, int tsk_prio, int sched_alg, int stk_size,
                void *(*start_routine) (void *), void (*exit_routine) (),
                void *arg, tmtask_t * ptskinfo)
 {
