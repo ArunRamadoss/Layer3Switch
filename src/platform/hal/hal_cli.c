@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include "common_types.h"
-#include "task.h"
 
 extern struct list_head      tsk_hd;
 
@@ -26,8 +25,13 @@ struct pstat_temp
 	long int cstime;
 	long int cutime;
 };
+int init_task_cpu_usage_moniter_timer (void);
+void track_cpu_usage (void *);
+void show_cpu_usage (void *[]);
+void calc_cpu_usage (struct pstat* curr, struct pstat* lst, float* ucpu_usage, float* scpu_usage, float *tcpu);
+int get_usage(const pid_t pid, struct pstat_temp* result);
 
-void track_cpu_usage (void)
+void track_cpu_usage (void *unused)
 {
 	register struct list_head *node = NULL;
 	register tmtask_t  *tskinfo = NULL;
@@ -54,10 +58,12 @@ int init_task_cpu_usage_moniter_timer (void)
 {
 	setup_timer (&cpu_timer, track_cpu_usage, NULL);
 
-	mod_timer (cpu_timer, 1);
+	mod_timer (cpu_timer, 5);
+
+	return 0;
 }
 
-void show_cpu_usage ()
+void show_cpu_usage (void *unused[])
 {
 	register struct list_head *node = NULL;
 	register tmtask_t  *tskinfo = NULL;

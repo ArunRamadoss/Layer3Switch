@@ -15,6 +15,7 @@
 #include <getopt.h>
 #include <netdb.h>
 #include <asm/types.h>
+#include "common_types.h"
 #include "list.h"
 #include "types_sim.h"
 
@@ -29,6 +30,17 @@ void vlink_processing_task (void *unused);
 void tx_pkt (void *buf,  int len);
 extern void dump_task_info (void);
 int open_message_queue (uint8_t inst);
+int parse_cmdline (int argc, char *argv[]);
+int spawn_pkt_processing_task (void);
+void * packet_processing_task (void *unused);
+int create_raw_sock_for_pkt_capture (void);
+int rcv_pkt (void *buf);
+void write_string (const char *str);
+void process_pkt (void  *pkt, int len, uint16_t port);
+void tx_pkt_for_capture (uint8_t *buf, int len) ;
+int ifname_info (char *ifname);
+int create_communication_channel (void);
+
 
 #pragma pack(push)  /* push current alignment to stack */
 #pragma pack(1)     /* set alignment to 1 byte boundary */
@@ -45,7 +57,7 @@ static uint32_t tm_ifindex = 0;
 static uint32_t tm_inst = 0;
 static char     tm_ifname[IFNAMSIZ] = "lo";
 
-void packet_processing_task (void *unused)
+void * packet_processing_task (void *unused)
 {
 	int len = 0;
 
@@ -91,6 +103,8 @@ void packet_processing_task (void *unused)
 
 		++gsw_info.cpu_pkt_count;
 	}
+
+	return 0;
 }
 
 void send_packet (void *buf, uint16_t port, int len)
@@ -149,7 +163,6 @@ int ifname_info (char *ifname)
 {
 	struct ifreq	ifr;
 	int		fd	= socket(AF_INET, SOCK_DGRAM, 0);
-	uint32_t	addr	= 0;
 
 	if (fd < 0) 	
 		return (-1);
@@ -173,10 +186,10 @@ int ifname_info (char *ifname)
 }
 
 
-spawn_pkt_processing_task ()
+int spawn_pkt_processing_task (void)
 {
-	int tid = 0;
-	int r = task_create ("PKRX", 98, 3, 32000, packet_processing_task, NULL, NULL, &tid);
+	tmtaskid_t tid = 0;
+	return task_create ("PKRX", 98, 3, 32000, packet_processing_task, NULL, NULL, &tid);
 }
 
 
@@ -195,7 +208,7 @@ int create_communication_channel (void)
 	si_me.sin_port = htons(TM_INST_PORT);
 	si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(sockid, &si_me, sizeof(si_me)) < 0) {
+	if (bind(sockid, (struct sockaddr *)&si_me, sizeof(si_me)) < 0) {
 		perror ("BIND");
 		return -1;
 	}
@@ -220,9 +233,9 @@ int rcv_pkt (void *buf)
 {
 	int len = 0;
 	struct sockaddr_in si_other;
-	int slen=sizeof(si_other);
+	socklen_t slen=sizeof(si_other);
 
-	len = recvfrom (sockid, buf, ETH_FRAME_LEN, 0, &si_other, &slen);
+	len = recvfrom (sockid, buf, ETH_FRAME_LEN, 0, (struct sockaddr *) &si_other, &slen);
 #ifdef PKT_DBG
 	printf("Received packet from %s:%d\nData: %s\n\n", 
         	inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), buf);
@@ -240,4 +253,6 @@ int parse_cmdline (int argc, char *argv[])
 	create_communication_channel ();	
 
 	create_raw_sock_for_pkt_capture ();
+
+	return 0;
 }

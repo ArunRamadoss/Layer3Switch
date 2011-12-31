@@ -35,4 +35,4 @@ cmd_t * cmd_tree_walk (struct rb_root  *cmd_root, unsigned int key);
 extern char read_input ();
 int add_input_to_the_cmd(char c,char *tmp);
 int write_input_on_screen(char c);
-void write_string (char *str);
+void write_string (const char *str);

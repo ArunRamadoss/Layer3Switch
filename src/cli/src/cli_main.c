@@ -28,7 +28,8 @@ static void spawn_cli_thread (void);
 static void *cmdinterface(void *unused);
 static void init_tty_prompt (void);
 void handle_segfault (int );
-
+int start_cli_task (void);
+int cli_init (const char *prmt);
 
 struct rb_root   cmd_root; 
 int is_help = 0;
@@ -40,7 +41,7 @@ static int gfd = 1;
 static struct termios oldt, newt;
 int login_sucessfull = 0;
 
-int cli_init (char *prmt) 
+int cli_init (const char *prmt) 
 {
 	/* init the tty promt properties*/
 	init_tty_prompt ();
@@ -72,6 +73,7 @@ int cli_init (char *prmt)
 
 int start_cli_task (void)
 {
+	set_curr_mode (USER_EXEC_MODE);
 	/*finally kick-start the shell thread*/
 	spawn_cli_thread ();
 
@@ -304,7 +306,7 @@ int write_input_on_screen(char c)
 	fflush (stdout);
 }
 
-void write_string (char *str)
+void write_string (const char *str)
 {
 	write (gfd, str, strlen(str));
 	fflush (stdout);

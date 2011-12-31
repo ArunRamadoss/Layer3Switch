@@ -6,6 +6,12 @@
 
 #define IS_MAC_UCAST_MAC(addr)  (!(addr[0] & 0xFF))
 
+void process_pkt (void  *pkt, int len, uint16_t port);
+void send_pkt (void *buf, int len, uint16_t dport);
+int stp_rcv_bpdu (void *pkt, int port, int vlanid, int len);
+int mac_address_update (MACADDRESS mac_addr, int32_t port_no, uint16_t vlan_id);
+int is_dest_stp_group_address (MACADDRESS mac);
+
 void process_pkt (void  *pkt, int len, uint16_t port)
 {
 	struct ether_hdr *p = (struct ether_hdr *)pkt;
@@ -18,7 +24,7 @@ void process_pkt (void  *pkt, int len, uint16_t port)
 	}
 
 	if (IS_MAC_UCAST_MAC (p->smac.addr)) {
-	 	mac_address_update (p->smac, (uint32_t)port);
+	 	mac_address_update (p->smac, (uint32_t)port, 1);
 #if 0
 		if (unknown_umac (p->dmac)) {
 			/*flood the packet*/
