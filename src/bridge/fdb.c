@@ -19,17 +19,23 @@ typedef struct fdb_entry {
         int32_t      port;
         uint32_t     status;
 	int32_t      is_static;
-	int32_t     expiry;
+	uint32_t     expiry;
 }fdb_t;
 
 /*************** Prototypes **************************/
 void aging_timer_expired (void *);
-int fdb_mac_hash(const unsigned char *mac);
+int fdb_mac_hash(unsigned char *mac);
 static int fdb_delete_entry (MACADDRESS mac, int32_t portno);
 static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static);
 unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2);
 static fdb_t * fdb_lookup (MACADDRESS mac, int32_t port_no);
-void show_mac_table ();
+void show_mac_table (void *);
+int fdb_init (void); 
+int mac_address_update (MACADDRESS , int32_t , uint16_t );
+int stp_is_mac_learning_allowed (int);
+void display_fdb_entry (void *);
+void delete_age_out_entires (void *);
+
 /*********************************************************/
 
 /******************* Static Dec  **********************/
@@ -131,8 +137,9 @@ static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static)
 	return hash_tbl_add (nfdb->mac_addr.addr, fdb_hash_table, (void *)nfdb);
 }
 
-static void fdb_free_entry (fdb_t *ffdb)
+static void fdb_free_entry (void *fdb)
 {
+	fdb_t *ffdb = (fdb_t *)fdb;
 	free_blk (fdb_pool_id, ffdb);
 }
 
@@ -143,15 +150,17 @@ static int fdb_delete_entry (MACADDRESS mac, int32_t portno)
 
 
 /*XXX: Picked from Linux Kernel*/
-int fdb_mac_hash(const unsigned char *mac)
+int fdb_mac_hash(unsigned char *mac)
 {
         /* use 1 byte of OUI cnd 3 bytes of NIC */
         uint32_t key = (uint32_t )(*(uint32_t *)(mac + 2));
         return jhash_1word (key, fdb_salt) & (FDB_HASH_SIZE - 1);
 }
 
-int delete_age_out_entires (fdb_t *p)
+void delete_age_out_entires (void *data)
 {
+	fdb_t *p = (fdb_t *)data;
+
 	if (p->expiry <= get_secs ()) {
 		fdb_delete_entry (p->mac_addr, p->port);
 	}
@@ -163,9 +172,10 @@ void aging_timer_expired (void *unused)
 	mod_timer (ageing_timer, tbridge.dot1dTpAgingTime);
 }
 
-void display_fdb_entry (fdb_t *p)
+void display_fdb_entry (void *data)
 {
 	unsigned char *mac = NULL;
+	fdb_t *p = (fdb_t *)data;
 
 	mac = p->mac_addr.addr;
 
@@ -175,7 +185,7 @@ void display_fdb_entry (fdb_t *p)
 
 }
 
-void show_mac_table (void)
+void show_mac_table (void *unused)
 {
 	printf ("  %-6s   %-10s         %-10s   %-10s\n",
 	        "port", "mac address", "type", "aging(secs)");

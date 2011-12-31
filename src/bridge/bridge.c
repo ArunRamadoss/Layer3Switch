@@ -1,6 +1,16 @@
 #include "common_types.h"
 #include "bridge.h"
 
+/***********************Prototypes**********************/
+int bridge_init (void);
+void bridge_base_init (void);
+int fdb_init (void);
+int stp_init (void);
+int rstp_init (void);
+int stpmgr_init (void);
+int vlan_init (void);
+void get_bridge_mac_address (char *);
+/*******************************************************/
 
 extern char switch_mac[];
 bridge_group_t   this_bridge;
@@ -19,9 +29,11 @@ int bridge_init (void)
 	stpmgr_init ();
 
 	vlan_init ();
+
+	return 0;
 }
 
-int bridge_base_init (void)
+void bridge_base_init (void)
 {
 	int i = MAX_PORTS;
 	int j = 0;

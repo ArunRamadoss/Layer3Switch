@@ -30,7 +30,7 @@
 #include "jhash.h"
 
 HASH_TABLE * create_hash_table (char *hashname, int buckets, 
-				int (*cmp)(char *list, char *key),
+				int (*cmp)(const uint8_t *list, const uint8_t *key),
 				int  (*index_gen)(char *key), int key_len)
 {
 	HASH_TABLE * htable = NULL;

@@ -10,7 +10,7 @@
 
 #include "inc.h"
 
-APP_TIMER_T * timer_tree_walk (struct rb_root  *root, unsigned int key, char flag);
+static APP_TIMER_T * timer_tree_walk (struct rb_root  *root, unsigned int key, char flag);
 
 #define IS_TMR_EXPD(ptmr)               !ptmr->ctime 
 
@@ -106,7 +106,7 @@ void timer_del (APP_TIMER_T *n, struct rb_root *root)
 	sync_unlock (&root->lock);
 }
 
-APP_TIMER_T * timer_tree_walk (struct rb_root  *root, unsigned int key, char flag)
+static APP_TIMER_T * timer_tree_walk (struct rb_root  *root, unsigned int key, char flag)
 {
 	struct rb_node **p = NULL;
 	struct rb_node *parent = NULL;
