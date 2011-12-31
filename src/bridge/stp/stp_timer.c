@@ -12,8 +12,6 @@
  */
 #include "stp_info.h"
 
-extern void stp_fdb_cleanup(unsigned long _data);
-
 static int stp_is_designated_for_some_port(const struct stp_instance *br)
 {
 	struct stp_port_entry *p;
@@ -27,7 +25,7 @@ static int stp_is_designated_for_some_port(const struct stp_instance *br)
 	return 0;
 }
 
-static void stp_hello_timer_expired(unsigned long arg)
+static void stp_hello_timer_expired(void *arg)
 {
 	struct stp_instance *br = (struct stp_instance *)arg;
 
@@ -36,11 +34,10 @@ static void stp_hello_timer_expired(unsigned long arg)
 	mod_timer (br->hello_timer, br->hello_time);
 }
 
-static void stp_message_age_timer_expired(unsigned long arg)
+static void stp_message_age_timer_expired(void *arg)
 {
 	struct stp_port_entry *p = (struct stp_port_entry *) arg;
 	struct stp_instance *br = p->br;
-	const BRIDGEID *id = &p->designated_bridge;
 	int was_root;
 
 	if (p->state == DISABLED)
@@ -56,7 +53,7 @@ static void stp_message_age_timer_expired(unsigned long arg)
 		stp_become_root_bridge(br);
 }
 
-static void stp_forward_delay_timer_expired(unsigned long arg)
+static void stp_forward_delay_timer_expired(void *arg)
 {
 	struct stp_port_entry *p = (struct stp_port_entry *) arg;
 	struct stp_instance *br = p->br;
@@ -71,7 +68,7 @@ static void stp_forward_delay_timer_expired(unsigned long arg)
 	}
 }
 
-static void stp_tcn_timer_expired(unsigned long arg)
+static void stp_tcn_timer_expired(void *arg)
 {
 	struct stp_instance *br = (struct stp_instance *) arg;
 
@@ -79,7 +76,7 @@ static void stp_tcn_timer_expired(unsigned long arg)
 	mod_timer(br->tcn_timer, br->bridge_hello_time);
 }
 
-static void stp_topology_change_timer_expired(unsigned long arg)
+static void stp_topology_change_timer_expired(void * arg)
 {
 	struct stp_instance *br = (struct stp_instance *) arg;
 
@@ -87,7 +84,7 @@ static void stp_topology_change_timer_expired(unsigned long arg)
 	br->topology_change = 0;
 }
 
-static void stp_hold_timer_expired(unsigned long arg)
+static void stp_hold_timer_expired(void *arg)
 {
 	struct stp_port_entry *p = (struct stp_port_entry *) arg;
 
@@ -97,25 +94,22 @@ static void stp_hold_timer_expired(unsigned long arg)
 
 void stp_timer_init(struct stp_instance *br)
 {
-	setup_timer(&br->hello_timer, stp_hello_timer_expired,
-		      (unsigned long) br);
+	setup_timer(&br->hello_timer, stp_hello_timer_expired, (void *)br);
 
-	setup_timer(&br->tcn_timer, stp_tcn_timer_expired,
-		      (unsigned long) br);
+	setup_timer(&br->tcn_timer, stp_tcn_timer_expired, (void *)br);
 
-	setup_timer(&br->topology_change_timer,
-		      stp_topology_change_timer_expired,
-		      (unsigned long) br);
+	setup_timer(&br->topology_change_timer, stp_topology_change_timer_expired,
+		      (void *) br);
 }
 
 void stp_port_timer_init(struct stp_port_entry *p)
 {
 	setup_timer(&p->message_age_timer, stp_message_age_timer_expired,
-		      (unsigned long) p);
+		      (void *) p);
 
 	setup_timer(&p->forward_delay_timer, stp_forward_delay_timer_expired,
-		      (unsigned long) p);
+		      (void *) p);
 
 	setup_timer(&p->hold_timer, stp_hold_timer_expired,
-		      (unsigned long) p);
+		      (void *) p);
 }

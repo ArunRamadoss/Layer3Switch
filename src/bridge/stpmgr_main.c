@@ -1,8 +1,15 @@
 #include "stp_info.h"
 
 
-int stpmgr_task (void *arg);
+void* stpmgr_task (void *arg);
 int process_bpdu (void *bpdu, uint16_t port, int, int);
+int stpmgr_init (void);
+int stp_process_events (int port, uint8_t event, int vlanid);
+int stp_send_event (int event, int port, int vlanid);
+int stp_rcv_bpdu (void *pkt, int port, int vlanid, int len);
+int stp_enable_or_disable_port (int port, int state);
+int rstp_enable_or_disable_port (int port, int state);
+int rstp_process_bpdu (void *tpdu, uint16_t ifp);
 
 static int stp_Q_pool_id = 0;
 static int stp_Q_id = 0;
@@ -23,9 +30,8 @@ enum stp_msg_types {
 
 int stpmgr_init (void)
 {
-	int tid = 0;
+	tmtaskid_t tid = 0;
 	int len = sizeof (struct stp_msg);
-	int j = 0;
 
 	if ((stp_Q_id = msg_create_Q ("STPQ", STP_MAX_MSG, len)) < 0) {
 		debug_stp ("Message Q Creation failed !\n");
@@ -41,25 +47,26 @@ int stpmgr_init (void)
 	}
 
 	task_create ("STPMGR", 3, 3, 32000, stpmgr_task, NULL, NULL, &tid);
+
+	return 0;
 }
 
-int stpmgr_task (void *arg)
+void *stpmgr_task (void *arg)
 {
 	struct stp_msg *msg = NULL;
 
-	int    prio = 0;
-
 	while (1) {
-		if (msg_rcv (stp_Q_id, &msg, sizeof(struct stp_msg)) < 0) {
+		if (msg_rcv (stp_Q_id, (char **)&msg, sizeof(struct stp_msg)) < 0) {
 			continue;
 		}
 		switch (msg->type) {
 			case STP_MSG_TYPE_BPDU:
 				process_bpdu (msg->msg, msg->port, msg->vlanid, msg->len);
-				tm_free (msg->msg);
+				free (msg->msg);
 				break;
 			case STP_MSG_TYPE_EVENTS:
-				if (stp_process_events (msg->port, (uint8_t)msg->msg, 
+				if (stp_process_events (msg->port, (uint8_t)
+							((unsigned long)msg->msg), 
 							msg->vlanid) < 0) {
 				}
 				break;
@@ -69,6 +76,7 @@ int stpmgr_task (void *arg)
 		}
 		free_blk (stp_Q_pool_id, msg);
 	}
+	return NULL;
 }
 
 int stp_rcv_bpdu (void *pkt, int port, int vlanid, int len)
@@ -114,8 +122,10 @@ int stp_process_events (int port, uint8_t event, int vlanid)
 		stp_enable_or_disable_port (port, event);
 
 	} else if (stp_mode == MODE_RSTP) {
-		rstp_enable_or_disable_port (port, event, vlanid);
+		rstp_enable_or_disable_port (port, event);
 	}
+
+	return 0;
 }
 
 

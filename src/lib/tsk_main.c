@@ -26,7 +26,7 @@ tmtaskid_t          curtskid;
  *  @
  */
 
-retval_t task_create (char tskname[], int tsk_prio, int sched_alg, int stk_size,
+retval_t task_create (const char tskname[], int tsk_prio, int sched_alg, int stk_size,
 	              void *(*start_routine) (void *), void (*exit_routine) (),
 		      void *arg, tmtaskid_t * rettskid)
 {

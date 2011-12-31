@@ -29,7 +29,7 @@ static int fdb_delete_entry (MACADDRESS mac, int32_t portno);
 static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static);
 unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2);
 static fdb_t * fdb_lookup (MACADDRESS mac, int32_t port_no);
-void show_mac_table (void *);
+void show_mac_table (char *[]);
 int fdb_init (void); 
 int mac_address_update (MACADDRESS , int32_t , uint16_t );
 int stp_is_mac_learning_allowed (int);
@@ -185,7 +185,7 @@ void display_fdb_entry (void *data)
 
 }
 
-void show_mac_table (void *unused)
+void show_mac_table (char *unused[])
 {
 	printf ("  %-6s   %-10s         %-10s   %-10s\n",
 	        "port", "mac address", "type", "aging(secs)");

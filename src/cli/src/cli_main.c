@@ -221,7 +221,8 @@ int reset_tty(void)
 	return 0;   
 }
 
-int install_cmd_handler (const char *cmd, const char *help, void (*handler) (void *), const char *syntax, int priv_mode)
+int install_cmd_handler (const char *cmd, const char *help, void (*handler) (char *[]), 
+			 const char *syntax, int priv_mode)
 {
 	cmdnode_t *new = NULL;
 	cmd_t *p = NULL;

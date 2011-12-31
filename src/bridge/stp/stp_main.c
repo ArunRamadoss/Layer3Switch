@@ -6,15 +6,25 @@ static void stp_decode_bpdu (STP_BPDU_T *cpdu);
 struct stp_instance stp_global_instance;
 struct list_head  stp_instance_head;
 
-int stp_init (void)
-{
-	int tid = 0;
-	if (stp_init_res () < 0) {
-		return -1;
-	}
-}
+/*****************************************************/
+int stp_init (void);
+static int stp_init_res (void);
+int stp_cli_init_cmd (void);
+int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p);
+int stp_delete_stp_instance (struct stp_instance *p);
+int  stp_create_port (struct stp_instance *stp_inst, int port);
+void stp_port_timer_init(struct stp_port_entry *p);
+int  stp_delete_port (struct stp_instance *stp_inst, uint32_t port);
+struct stp_port_entry *  stp_get_port_info (struct stp_instance *stp_inst, uint32_t port);
+int validate_TC_bpdu (STP_BPDU_T *bpdu);
+int validate_config_bpdu (STP_BPDU_T *bpdu);
+void stp_transmit_config(struct stp_port_entry *p);
+void stp_transmit_tcn(struct stp_instance *br);
+int stp_set_state (struct stp_instance *br, int state);
+int is_dest_stp_group_address (MACADDRESS mac);
+/*****************************************************/
 
-int stp_init_res (void)
+static int stp_init_res (void)
 {
 	INIT_LIST_HEAD (&stp_instance_head);
 
@@ -23,7 +33,15 @@ int stp_init_res (void)
 	return 0;
 }
 
-int stp_init_stp_instance (struct stp_instance  *new, uint16_t vlan_id)
+int stp_init (void)
+{
+	if (stp_init_res () < 0) {
+		return -1;
+	}
+	return 0;
+}
+
+static int stp_init_stp_instance (struct stp_instance  *new, uint16_t vlan_id)
 {
 
 	int j = 0;
@@ -58,6 +76,8 @@ int stp_init_stp_instance (struct stp_instance  *new, uint16_t vlan_id)
         new->topology_change_detected = TRUE;
 
 	stp_timer_init (new);
+
+	return 0;
 }
 
 int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p)
@@ -84,7 +104,7 @@ int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p)
 	
 	if (stp_init_stp_instance (new, vlan_id) < 0) {
 		debug_stp ("STP Instance Creation failed ");
-		tm_free (new);
+		tm_free (new, sizeof(struct stp_instance));
 		return -1;
 	}
 
@@ -107,6 +127,8 @@ int stp_delete_stp_instance (struct stp_instance *p)
 	}
 
 	tm_free (p, sizeof(*p));
+	
+	return 0;
 }
 
 int  stp_create_port (struct stp_instance *stp_inst, int port)
@@ -140,7 +162,7 @@ int  stp_create_port (struct stp_instance *stp_inst, int port)
 	return rval;
 }	
 
-int  stp_delete_port (struct stp_instance *stp_inst, int port)
+int  stp_delete_port (struct stp_instance *stp_inst, uint32_t port)
 {
 	struct stp_port_entry *p = NULL;
 
@@ -153,7 +175,7 @@ int  stp_delete_port (struct stp_instance *stp_inst, int port)
 	return 0;
 }
 
-struct stp_port_entry *  stp_get_port_info (struct stp_instance *stp_inst, int port)
+struct stp_port_entry *  stp_get_port_info (struct stp_instance *stp_inst, uint32_t port)
 {
 	struct stp_port_entry *p = NULL;
 
@@ -179,6 +201,16 @@ struct stp_port_entry * stp_get_port_entry (uint16_t port)
 	}
 	return NULL;
 
+}
+
+int validate_TC_bpdu (STP_BPDU_T *bpdu)
+{
+	return 1;
+}
+
+int validate_config_bpdu (STP_BPDU_T *bpdu)
+{
+	return 1;
 }
 
 int stp_process_bpdu (STP_BPDU_T *bpdu, uint16_t port)
@@ -215,16 +247,6 @@ int stp_process_bpdu (STP_BPDU_T *bpdu, uint16_t port)
 	}
 
 	return 0;
-}
-
-int validate_TC_bpdu (STP_BPDU_T *bpdu)
-{
-	return 1;
-}
-
-int validate_config_bpdu (STP_BPDU_T *bpdu)
-{
-	return 1;
 }
 
 struct stp_port_entry *stp_get_port(struct stp_instance *br, uint16_t port_no)
@@ -691,12 +713,11 @@ static void stp_send_bpdu(struct stp_port_entry *p,  const unsigned char *data,
 
 	send_packet (pkt, p->port_no, length + size);
 
-	tm_free (pkt);
+	tm_free (pkt, size + length);
 }
 
 void stp_send_config_bpdu(struct stp_port_entry *p, STP_BPDU_T *bpdu)
 {
-	struct stp_hdr hd ;
 	unsigned char buf[35];
 
 	if (p->br->stp_enabled != STP_ENABLED)
@@ -753,35 +774,12 @@ void stp_send_tcn_bpdu(struct stp_port_entry *p)
 	stp_send_bpdu(p, buf, 4);
 }
 
-PORTID stp_make_port_id(uint8_t priority, uint16_t port_no)
-{
-	return ((uint16_t)priority << STP_PORT_BITS)
-		| (port_no & ((1<<STP_PORT_BITS)-1));
-}
-
 unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2)
 {
 	const uint16_t *a = (const uint16_t *) addr1;
 	const uint16_t *b = (const uint16_t *) addr2;
 
 	return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) != 0;
-}
-
-
-struct stp_instance * get_this_bridge_entry (uint16_t vlan_id)
-{
-	struct stp_instance *p = NULL;
-
-	if (vlan_id == VLAN_INVALID_ID) {
-		return &stp_global_instance;
-	}
-
-	list_for_each_entry(p, &stp_instance_head, next) {
-		if (p->vlan_id == vlan_id)
-			return p;
-	}
-	
-	return NULL;
 }
 
 int is_dest_stp_group_address (MACADDRESS mac)

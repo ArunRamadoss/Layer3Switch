@@ -7,6 +7,7 @@
 #include <sys/times.h>
 #include <fcntl.h>
 #include <linux/ip.h>
+#include <arpa/inet.h>
 
 #define MAX_PORT_NAME 8
 
@@ -239,5 +240,10 @@ enum STP_DEF_VALUES {
 
 static const uint8_t br_group_address[ETH_ALEN] = { 0x01, 0x80, 0xc2, 
                                               0x00, 0x00, 0x00 };
+
+int get_port_mac_address (uint32_t port, uint8_t *mac);
+unsigned compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2);
+int get_port_oper_state (uint32_t port);
+inline int bridge_timer_relation (int fdelay, int max_age, int hello);
 
 #include "libproto.h"

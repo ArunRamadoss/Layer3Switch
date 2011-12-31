@@ -74,7 +74,7 @@ int  msg_Q_init (void)
 	return 0;
 }
 
-int msg_create_Q (char *name, int maxmsg, int size)
+int msg_create_Q (const char *name, int maxmsg, int size)
 {
 	int  qid = get_qid ();
 

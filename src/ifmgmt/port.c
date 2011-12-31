@@ -2,6 +2,8 @@
 #include "cli.h"
 #include "ifmgmt.h"
 
+int stp_send_event (int event, int port, int vlanid);
+
 port_t port_cdb[MAX_PORTS];
 
 int port_init (void)
@@ -30,6 +32,8 @@ int port_init (void)
 		read_port_mac_address (idx, &port_cdb[idx].ifPhysAddress); 
 	}
 	port_cli_cmds_init ();
+
+	return 0;
 }
 
 void send_interface_enable_or_disable (int port , int state)
@@ -38,12 +42,13 @@ void send_interface_enable_or_disable (int port , int state)
 	stp_send_event (state, port, vlanid);
 }
 
-int get_port_oper_state (int port)
+int get_port_oper_state (uint32_t port)
 {
 	return port_cdb[port - 1].ifOperStatus;
 }
 
-int get_port_mac_address (int port, char *mac)
+int get_port_mac_address (uint32_t port, uint8_t *mac)
 {
 	memcpy (mac, port_cdb[port-1].ifPhysAddress.addr, 6);
+	return 0;
 }

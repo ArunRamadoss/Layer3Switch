@@ -2,6 +2,11 @@
  * This file contatins all library funtions prototypes
  */
 
+#include "task.h"
+/*TASK*/
+retval_t task_create (const char tskname[], int tsk_prio, int sched_alg, int stk_size,
+	              void *(*start_routine) (void *), void (*exit_routine) (),
+		      void *arg, tmtaskid_t * rettskid);
 
 /*MEM pool*/
 int mem_pool_create (const char *name, size_t size, int n_blks, int flags);
@@ -32,3 +37,12 @@ int  hash_tbl_add (uint8_t *, struct hash_table *, void *);
 int  hash_tbl_delete (unsigned char *, struct hash_table *, void (*free_data)(void *));
 int  hash_walk (struct hash_table *, void (*callback)(void *));
 uint32_t jhash_1word(uint32_t a, uint32_t initval);
+
+/*MSG Q*/
+
+int msg_create_Q (const char *name, int maxmsg, int size);
+int msg_rcv (int qid, char **msg, int size);
+int msg_send (int qid, void *msg, int size);
+
+
+void send_packet (void *buf, uint16_t port, int len);

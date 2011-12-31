@@ -14,7 +14,37 @@
 #include "stp_info.h"
 #include "ifmgmt.h"
 
-void stp_init_port(struct stp_port_entry *p)
+PORTID stp_make_port_id(uint8_t priority, uint16_t port_no);
+struct stp_instance * get_this_bridge_entry (uint16_t vlan_id);
+static void stp_init_port(struct stp_port_entry *p);
+int stp_is_mac_learning_allowed (int port);
+
+extern struct stp_instance stp_global_instance;
+extern struct list_head  stp_instance_head;
+
+struct stp_instance * get_this_bridge_entry (uint16_t vlan_id)
+{
+	struct stp_instance *p = NULL;
+
+	if (vlan_id == VLAN_INVALID_ID) {
+		return &stp_global_instance;
+	}
+
+	list_for_each_entry(p, &stp_instance_head, next) {
+		if (p->vlan_id == vlan_id)
+			return p;
+	}
+	
+	return NULL;
+}
+
+PORTID stp_make_port_id(uint8_t priority, uint16_t port_no)
+{
+	return ((uint16_t)priority << STP_PORT_BITS)
+		| (port_no & ((1<<STP_PORT_BITS)-1));
+}
+
+static void stp_init_port(struct stp_port_entry *p)
 {
 	p->port_id = stp_make_port_id(p->priority, p->port_no);
 	stp_become_designated_port(p);

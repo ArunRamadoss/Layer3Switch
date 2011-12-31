@@ -15,7 +15,7 @@
 #include <string.h>
 #include "stp_info.h"
 
-int llc_mac_hdr_init (char *pkt, const void *daddr, const void *saddr, int type, int len)
+int llc_mac_hdr_init (uint8_t *pkt, const uint8_t *daddr, const uint8_t *saddr, int type, int len)
 {
         struct ether_hdr *eth = (struct ether_hdr *)pkt;
 
@@ -39,14 +39,13 @@ int llc_mac_hdr_init (char *pkt, const void *daddr, const void *saddr, int type,
 
 void llc_pdu_header_init(uint8_t *pkt, uint8_t type, uint8_t ssap, uint8_t dsap, uint8_t cr)
 {
-        const int hlen = type == LLC_PDU_TYPE_U ? 3 : 4;
         struct llc_pdu_un *pdu = (struct llc_pdu_un *)(pkt + sizeof(MACHDR));
         pdu->dsap = dsap;
         pdu->ssap = ssap;
         pdu->ssap |= cr;
 }
 
-void llc_pdu_init_as_ui_cmd(char *pkt)
+void llc_pdu_init_as_ui_cmd(uint8_t *pkt)
 {
         struct llc_pdu_un *pdu = (struct llc_pdu_un *)(pkt + sizeof(MACHDR));
         pdu->ctrl_1  = LLC_PDU_TYPE_U;

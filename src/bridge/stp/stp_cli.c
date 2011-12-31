@@ -1,9 +1,25 @@
 #include "stp_info.h"
 #include "cli.h"
 
+/******************************************************/
+void spanning_tree_enable (char *args[]);
+void spanning_tree_disable (char *args[]);
+void set_spanning_bridge_priority (char *args[]);
+void set_spanning_bridge_hello_time (char *args[]);
+void set_spanning_bridge_fdly (char *args[]);
+void set_spanning_bridge_max_age (char *args[]);
+void set_spanning_bridge_port_path_cost (char *args[]);
+void set_spanning_bridge_port_prio (char *args[]);
+int stp_cli_init_cmd (void);
+void show_spanning_tree  (char *args[]);
+int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode);
+int vlan_spanning_tree_disable_on_vlan (int vlan_id, int mode);
+struct stp_instance * get_this_bridge_entry (uint16_t vlan_id);
+/******************************************************/
+
 extern struct list_head stp_instance_head;
 
-void show_spanning_tree  (void)
+void show_spanning_tree  (char *args[])
 {
 	struct stp_instance *pstp_inst = NULL;
 
@@ -11,7 +27,7 @@ void show_spanning_tree  (void)
 
 		if (pstp_inst->stp_enabled) {
 
-			char *mac = NULL;
+			uint8_t *mac = NULL;
 			struct stp_port_entry *p =  NULL;
 
 			int is_root = stp_is_root_bridge (pstp_inst);
@@ -50,8 +66,8 @@ void show_spanning_tree  (void)
 			}
 
 			if (!list_empty (&pstp_inst->port_list)) {
-				char *state[] = {"DISABLED", "LISTENING", "LEARNING", 
-					"FORWARDING", "BLOCKING"};
+				const char *state[] = {"DISABLED", "LISTENING", "LEARNING", 
+					               "FORWARDING", "BLOCKING"};
 				printf ("\nPort   Cost     State      Bridge Id         Prio \n");
 				printf ("----   -----   ------   -----------------    ------\n");
 				list_for_each_entry(p, &pstp_inst->port_list, list) {
@@ -69,11 +85,11 @@ void show_spanning_tree  (void)
 	}
 }
 
-void spanning_tree_enable (void)
+void spanning_tree_enable (char *args[])
 {
 	vlan_spanning_tree_enable_on_vlan (cli_get_vlan_id (), MODE_STP);
 }
-void spanning_tree_disable (void)
+void spanning_tree_disable (char *args[])
 {
 	vlan_spanning_tree_disable_on_vlan (cli_get_vlan_id (), MODE_STP);
 }
@@ -198,4 +214,6 @@ int stp_cli_init_cmd (void)
 
 	install_cmd_handler ("show spanning-tree", "shows Spanning Tree", 
                               show_spanning_tree, NULL, USER_EXEC_MODE);
+
+	return 0;
 }
