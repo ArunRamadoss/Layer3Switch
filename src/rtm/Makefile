@@ -57,11 +57,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"
 PROGRAMS = $(noinst_PROGRAMS) $(sbin_PROGRAMS)
-am_testzebra_OBJECTS = zebra_rib.$(OBJEXT) \
-	interface.$(OBJEXT) connected.$(OBJEXT) debug.$(OBJEXT) \
-	zebra_vty.$(OBJEXT) kernel_null.$(OBJEXT) \
-	redistribute_null.$(OBJEXT) ioctl_null.$(OBJEXT) \
-	misc_null.$(OBJEXT)
+am_testzebra_OBJECTS = zebra_rib.$(OBJEXT) interface.$(OBJEXT) \
+	connected.$(OBJEXT) debug.$(OBJEXT) zebra_vty.$(OBJEXT) \
+	kernel_null.$(OBJEXT) redistribute_null.$(OBJEXT) \
+	ioctl_null.$(OBJEXT) misc_null.$(OBJEXT)
 testzebra_OBJECTS = $(am_testzebra_OBJECTS)
 am__DEPENDENCIES_1 =
 testzebra_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -69,8 +68,9 @@ testzebra_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am_zebra_OBJECTS = zserv.$(OBJEXT) main.$(OBJEXT) interface.$(OBJEXT) \
 	connected.$(OBJEXT) zebra_rib.$(OBJEXT) \
 	zebra_routemap.$(OBJEXT) redistribute.$(OBJEXT) \
-	debug.$(OBJEXT) rtadv.$(OBJEXT) \
-	zebra_vty.$(OBJEXT)  \
+	debug.$(OBJEXT) rtadv.$(OBJEXT) zebra_snmp.$(OBJEXT) \
+	zebra_vty.$(OBJEXT) irdp_main.$(OBJEXT) \
+	irdp_interface.$(OBJEXT) irdp_packet.$(OBJEXT) \
 	router-id.$(OBJEXT)
 zebra_OBJECTS = $(am_zebra_OBJECTS)
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -128,18 +128,18 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run aclocal-1.11
-AMTAR = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run tar
+ACLOCAL = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run aclocal-1.11
+AMTAR = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run tar
 AR = ar
-AUTOCONF = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run automake-1.11
 AWK = gawk
 BGPD = bgpd
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -Os -fno-omit-frame-pointer -g -std=gnu99 -Wall -Wsign-compare -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations -Wchar-subscripts -Wcast-qual
-CONFDATE = 20111221
+CONFDATE = 20120101
 CPP = gcc -E
 CPPFLAGS = 
 CURSES = 
@@ -188,7 +188,7 @@ LIB_REGEX =
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/missing --run makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 MULTIPATH_NUM = 1
@@ -229,10 +229,10 @@ VERSION = 0.99.17.5
 VTYSH = 
 WATCHQUAGGA = watchquagga
 ZEBRA = zebra
-abs_builddir = /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm
-abs_srcdir = /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm
-abs_top_builddir = /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm
-abs_top_srcdir = /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm
+abs_builddir = /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm
+abs_srcdir = /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm
+abs_top_builddir = /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm
+abs_top_srcdir = /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -265,7 +265,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/balaji/Codes/L3Switch/Layer3Switch/src/rtm/install-sh
+install_sh = ${SHELL} /home/balaji/Codes/L3Switch_tree/L3Switch-devel/src/rtm/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -308,8 +308,8 @@ AM_CFLAGS = $(PICFLAGS)
 AM_LDFLAGS = $(PILDFLAGS)
 zebra_SOURCES = \
 	zserv.c main.c interface.c connected.c zebra_rib.c zebra_routemap.c \
-	redistribute.c debug.c rtadv.c zebra_vty.c \
-	router-id.c
+	redistribute.c debug.c rtadv.c zebra_snmp.c zebra_vty.c \
+	irdp_main.c irdp_interface.c irdp_packet.c router-id.c
 
 testzebra_SOURCES = zebra_rib.c interface.c connected.c debug.c \
 	zebra_vty.c \
@@ -326,7 +326,7 @@ EXTRA_DIST = if_ioctl.c if_ioctl_solaris.c if_netlink.c if_proc.c \
         if_sysctl.c ipforward_aix.c ipforward_ews.c ipforward_proc.c \
 	ipforward_solaris.c ipforward_sysctl.c rt_ioctl.c rt_netlink.c \
 	rt_socket.c rtread_netlink.c rtread_proc.c rtread_sysctl.c \
-	rtread_getmsg.c kernel_socket.c kernel_netlink.c \
+	rtread_getmsg.c kernel_socket.c kernel_netlink.c mtu_kvm.c \
 	ioctl.c ioctl_solaris.c \
 	GNOME-SMI GNOME-PRODUCT-ZEBRA-MIB
 
@@ -471,7 +471,6 @@ include ./$(DEPDIR)/redistribute.Po
 include ./$(DEPDIR)/redistribute_null.Po
 include ./$(DEPDIR)/router-id.Po
 include ./$(DEPDIR)/rtadv.Po
-include ./$(DEPDIR)/test_main.Po
 include ./$(DEPDIR)/zebra_rib.Po
 include ./$(DEPDIR)/zebra_routemap.Po
 include ./$(DEPDIR)/zebra_snmp.Po

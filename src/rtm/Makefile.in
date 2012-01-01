@@ -57,11 +57,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(examplesdir)"
 PROGRAMS = $(noinst_PROGRAMS) $(sbin_PROGRAMS)
-am_testzebra_OBJECTS = zebra_rib.$(OBJEXT) \
-	interface.$(OBJEXT) connected.$(OBJEXT) debug.$(OBJEXT) \
-	zebra_vty.$(OBJEXT) kernel_null.$(OBJEXT) \
-	redistribute_null.$(OBJEXT) ioctl_null.$(OBJEXT) \
-	misc_null.$(OBJEXT)
+am_testzebra_OBJECTS = zebra_rib.$(OBJEXT) interface.$(OBJEXT) \
+	connected.$(OBJEXT) debug.$(OBJEXT) zebra_vty.$(OBJEXT) \
+	kernel_null.$(OBJEXT) redistribute_null.$(OBJEXT) \
+	ioctl_null.$(OBJEXT) misc_null.$(OBJEXT)
 testzebra_OBJECTS = $(am_testzebra_OBJECTS)
 am__DEPENDENCIES_1 =
 testzebra_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -69,8 +68,9 @@ testzebra_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am_zebra_OBJECTS = zserv.$(OBJEXT) main.$(OBJEXT) interface.$(OBJEXT) \
 	connected.$(OBJEXT) zebra_rib.$(OBJEXT) \
 	zebra_routemap.$(OBJEXT) redistribute.$(OBJEXT) \
-	debug.$(OBJEXT) rtadv.$(OBJEXT) \
-	zebra_vty.$(OBJEXT)  \
+	debug.$(OBJEXT) rtadv.$(OBJEXT) zebra_snmp.$(OBJEXT) \
+	zebra_vty.$(OBJEXT) irdp_main.$(OBJEXT) \
+	irdp_interface.$(OBJEXT) irdp_packet.$(OBJEXT) \
 	router-id.$(OBJEXT)
 zebra_OBJECTS = $(am_zebra_OBJECTS)
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -308,8 +308,8 @@ AM_CFLAGS = $(PICFLAGS)
 AM_LDFLAGS = $(PILDFLAGS)
 zebra_SOURCES = \
 	zserv.c main.c interface.c connected.c zebra_rib.c zebra_routemap.c \
-	redistribute.c debug.c rtadv.c zebra_vty.c \
-	router-id.c
+	redistribute.c debug.c rtadv.c zebra_snmp.c zebra_vty.c \
+	irdp_main.c irdp_interface.c irdp_packet.c router-id.c
 
 testzebra_SOURCES = zebra_rib.c interface.c connected.c debug.c \
 	zebra_vty.c \
@@ -326,7 +326,7 @@ EXTRA_DIST = if_ioctl.c if_ioctl_solaris.c if_netlink.c if_proc.c \
         if_sysctl.c ipforward_aix.c ipforward_ews.c ipforward_proc.c \
 	ipforward_solaris.c ipforward_sysctl.c rt_ioctl.c rt_netlink.c \
 	rt_socket.c rtread_netlink.c rtread_proc.c rtread_sysctl.c \
-	rtread_getmsg.c kernel_socket.c kernel_netlink.c \
+	rtread_getmsg.c kernel_socket.c kernel_netlink.c mtu_kvm.c \
 	ioctl.c ioctl_solaris.c \
 	GNOME-SMI GNOME-PRODUCT-ZEBRA-MIB
 
@@ -471,7 +471,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/redistribute_null.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/router-id.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtadv.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_rib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_routemap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zebra_snmp.Po@am__quote@

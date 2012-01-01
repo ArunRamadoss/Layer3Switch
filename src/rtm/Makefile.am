@@ -31,7 +31,7 @@ zebra_SOURCES = \
 	redistribute.c debug.c rtadv.c zebra_snmp.c zebra_vty.c \
 	irdp_main.c irdp_interface.c irdp_packet.c router-id.c
 
-testzebra_SOURCES = test_main.c zebra_rib.c interface.c connected.c debug.c \
+testzebra_SOURCES = zebra_rib.c interface.c connected.c debug.c \
 	zebra_vty.c \
 	kernel_null.c  redistribute_null.c ioctl_null.c misc_null.c
 
