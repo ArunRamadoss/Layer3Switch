@@ -1,0 +1,36 @@
+//Locks the Console
+lock
+
+//logout from current session
+logout
+
+//Displays user info
+show users
+
+//Displays the CPU usage of the task
+show task-cpu
+
+// Enable privileged mode
+enable privileged-mode
+
+//configuration mode
+configure terminal
+#submode "config"
+//Add new user 
+user add <STRING:username> <STRING:password> <INT:level>
+//Deletes user
+user del <STRING:username>
+//Changes to the exec mode
+end
+//Exit from the current mode
+exit
+#endsubmode
+
+//Changes to the exec mode
+end
+
+//Exit from the current mode
+exit
+
+// Disable privileged mode
++ disable privileged-mode

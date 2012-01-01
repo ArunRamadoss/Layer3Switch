@@ -42,6 +42,7 @@ void cli_show_interfaces (void *arg[])
 
 void port_cli_cmds_init (void)
 {
+#if 0
 	install_cmd_handler ("interface ethernet <port>", "Interface mode",change_to_interface_mode , 
                              "interface ethernet <INT>", GLOBAL_CONFIG_MODE);
 
@@ -52,4 +53,5 @@ void port_cli_cmds_init (void)
    			      cli_set_port_enable, NULL, INTERFACE_MODE);
 	install_cmd_handler ("show interface", "Displays interface", 
    			      cli_show_interfaces, NULL, USER_EXEC_MODE);
+#endif
 }

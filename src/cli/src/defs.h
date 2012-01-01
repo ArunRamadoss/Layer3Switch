@@ -1,3 +1,5 @@
+#include "cli.h"
+
 #define MAX_CMD_NAME        64
 #define MAX_HELP_STRING     64
 #define MAX_PMP_LEN   64

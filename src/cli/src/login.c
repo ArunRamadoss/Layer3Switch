@@ -6,13 +6,13 @@
 #include <unistd.h>
 #include <termio.h>
 #include "defs.h"
-#include "cli.h"
+//#include "cli.h"
 
 #define MAX_TRY 3
 
 int process_logout()
 {
-	process_login ();
+	return process_login ();
 }
 
 void show_login_prompt()

@@ -10,7 +10,7 @@ int set_tagged__port_to_vlan (char **args);
 int set_vlan (char **args)
 {
 	if (!vlan_create_vlan (atoi (args[0]))) {
-		change_vlan_mode (args);
+		//change_vlan_mode (args);
 		return 0;
 	}
 	return -1;

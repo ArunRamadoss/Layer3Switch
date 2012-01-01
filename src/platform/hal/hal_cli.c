@@ -27,7 +27,7 @@ struct pstat_temp
 };
 int init_task_cpu_usage_moniter_timer (void);
 void track_cpu_usage (void *);
-void show_cpu_usage (void *[]);
+int  show_cpu_usage (void);
 void calc_cpu_usage (struct pstat* curr, struct pstat* lst, float* ucpu_usage, float* scpu_usage, float *tcpu);
 int get_usage(const pid_t pid, struct pstat_temp* result);
 
@@ -63,7 +63,7 @@ int init_task_cpu_usage_moniter_timer (void)
 	return 0;
 }
 
-void show_cpu_usage (void *unused[])
+int show_cpu_usage (void)
 {
 	register struct list_head *node = NULL;
 	register tmtask_t  *tskinfo = NULL;
@@ -94,6 +94,7 @@ void show_cpu_usage (void *unused[])
 
 		printf ("%10s     %10.1f       %10.1f\n", tskinfo->task_name, user_usage * 2, system_usage);
 	}
+	return 0;
 }
 
 int get_usage(const pid_t pid, struct pstat_temp* result)

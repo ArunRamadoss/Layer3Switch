@@ -1,5 +1,5 @@
-# Top-level Makefile for CLI Parser
-# $Id: Makefile 132 2009-05-07 09:33:05Z henry $
+# Makefile for parser library.
+# $Id: Makefile 97 2009-03-25 22:49:30Z henry $
 
 # Copyright (c) 2008, Henry Kwok
 # All rights reserved.
@@ -26,30 +26,62 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-all:
+include ../../build/make.h
 
-MODULE_LIST = .
+SRC_BASE = ..
+SRC_FILES = cparser.c cparser_token.c cparser_token_tbl.c cparser_io_unix.c \
+	    cparser_fsm.c cparser_line.c cparser_tree.c login.c user_mgmt.c cli_main.c cli_action.c
+SRC_MOD = cparser.a
 
-LIBRARY = libcparser.a
+cparser_tree.c: cmd.cli
+	$(SRC_BASE)/scripts/mk_parser.py $(CLI_FLAGS) cmd.cli
 
+local_clean:
+	rm -fr cparser_tree.c cparser_tree.h
+
+# Define a root build directory based on the platform
 ifeq ("$(OUTDIR)", "")
-OUTDIR = .
+  OUTDIR = .
 endif
 
-DIR_LIST = $(patsubst %,%.PHONY,$(MODULE_LIST) $(BIN_LIST) $(LIB_LIST))
+BUILDDIR = .
+OBJDIR   = .
+BINDIR   = .
+LIBDIR   = $(FINAL_OBJ)
 
-CLEAN_LIST = $(patsubst %,%.PHONY_CLEAN,$(MODULE_LIST))
+# Add a bunch of default include path
+SRC_INC += -I. -I../inc  -I$(SRC_BASE)/inc -I$(COMMON_INC)
 
-$(DIR_LIST):
-	@echo "MAKE $(basename $@)"
-	$(MAKE) PLATFORM=$(PLATFORM) MODULE=$(basename $@) DEBUG="$(DEBUG)" LIBRARY=$(LIBRARY) -C $(basename $@)/src all
+SRC_OBJ = $(patsubst %.c,$(OBJDIR)/%.o,$(SRC_FILES))
+SRC_DEP = $(patsubst %.c,$(OBJDIR)/%.d,$(SRC_FILES))
 
-$(CLEAN_LIST):
-	@echo "CLEAN $(basename $@)"
-	$(MAKE) PLATFORM=$(PLATFORM) MODULE=$(basename $@) DEBUG="$(DEBUG)" LIBRARY=$(LIBRARY) -C $(basename $@)/src clean
+# Include the list of dependency files
+-include $(SRC_DEP)
 
-bin: $(DIR_LIST)
+# Implicit rule to compile all source files
+$(OBJDIR)/%.o:%.c
+	@echo "  DEP     $<..."
+	$(CC) $(CFLAGS) -MM $(SRC_INC) -MF $(patsubst %.o,%.d,$@) -MT $@ $< 
+	@echo "  COMPILE $<..."
+	$(CC) -c $(CFLAGS) $(SRC_INC) $< -o $@
+ifneq ("$(LIBRARY)", "")
+	@echo "  ARCHIVE $(notdir $@)..."
+	$(AR) rcs $(LIBDIR)/$(LIBRARY) $@
+endif
 
-all: bin $(TEST_LIST)
+all: lib bin
 
-clean: $(CLEAN_LIST)
+dir: $(OBJDIR)
+
+lib: dir $(SRC_OBJ)
+
+bin: dir $(BINDIR)/$(SRC_BIN)
+
+$(OBJDIR):
+	@echo "  MKDIR obj/$(notdir $@)..."
+	mkdir -p $@
+
+clean: local_clean
+	rm -f  *.o *.d $(FINAL_OBJ)/libcparser.a
+
+local_clean:

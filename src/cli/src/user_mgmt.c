@@ -181,3 +181,6 @@ int show_users (void)
 	}
 	return 0;
 }
+int  install_cmd_handler (const char *d,const char *c, void (*handler) (char *[]),const char *b, int a)
+{
+}

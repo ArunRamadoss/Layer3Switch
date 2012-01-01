@@ -39,7 +39,7 @@ UDP:
 
 
 SWITCH:  lib BRIDGE STP PLATFORM CLI PORT GDD  RSTP VLAN IPV4 VRRP UDP
-	gcc -o Switch.exe obj/*.o -lpthread -lrt
+	gcc -o Switch.exe obj/*.o obj/*.a -lpthread -lrt
 
 clean: clean-custom
 	make clean -C $(CODE_DIR)/bridge
