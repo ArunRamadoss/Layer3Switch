@@ -33,7 +33,7 @@ struct mlist {
   const char *name;
 };
  
-#include "lib/memtypes.h"
+#include "memtypes.h"
 
 extern struct mlist mlists[];
 

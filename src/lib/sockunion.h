@@ -114,8 +114,10 @@ extern union sockunion *sockunion_dup (union sockunion *);
 extern void sockunion_free (union sockunion *);
 
 #ifndef HAVE_INET_NTOP
+#if 0
 extern const char * inet_ntop (int family, const void *addrptr, 
                                char *strptr, size_t len);
+#endif
 #endif /* HAVE_INET_NTOP */
 
 #ifndef HAVE_INET_PTON

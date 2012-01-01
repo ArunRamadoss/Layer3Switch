@@ -19,7 +19,7 @@
  * 02111-1307, USA.  
  */
 
-#include <zebra.h>
+#include "zebra.h"
 
 #include <lib/version.h>
 #include "getopt.h"
@@ -205,7 +205,7 @@ struct quagga_signal_t zebra_signals[] =
 
 /* Main startup routine. */
 int
-main (int argc, char **argv)
+rtm_init (int argc, char **argv)
 {
   char *p;
   char *vty_addr = NULL;
@@ -227,85 +227,6 @@ main (int argc, char **argv)
   zlog_default = openzlog (progname, ZLOG_ZEBRA,
 			   LOG_CONS|LOG_NDELAY|LOG_PID, LOG_DAEMON);
 
-  while (1) 
-    {
-      int opt;
-  
-#ifdef HAVE_NETLINK  
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:P:ru:g:vs:C", longopts, 0);
-#else
-      opt = getopt_long (argc, argv, "bdkf:i:z:hA:P:ru:g:vC", longopts, 0);
-#endif /* HAVE_NETLINK */
-
-      if (opt == EOF)
-	break;
-
-      switch (opt) 
-	{
-	case 0:
-	  break;
-	case 'b':
-	  batch_mode = 1;
-	case 'd':
-	  daemon_mode = 1;
-	  break;
-	case 'k':
-	  keep_kernel_mode = 1;
-	  break;
-	case 'C':
-	  dryrun = 1;
-	  break;
-	case 'f':
-	  config_file = optarg;
-	  break;
-	case 'A':
-	  vty_addr = optarg;
-	  break;
-        case 'i':
-          pid_file = optarg;
-          break;
-	case 'z':
-	  zserv_path = optarg;
-	  break;
-	case 'P':
-	  /* Deal with atoi() returning 0 on failure, and zebra not
-	     listening on zebra port... */
-	  if (strcmp(optarg, "0") == 0) 
-	    {
-	      vty_port = 0;
-	      break;
-	    } 
-	  vty_port = atoi (optarg);
-	  if (vty_port <= 0 || vty_port > 0xffff)
-	    vty_port = ZEBRA_VTY_PORT;
-	  break;
-	case 'r':
-	  retain_mode = 1;
-	  break;
-#ifdef HAVE_NETLINK
-	case 's':
-	  nl_rcvbufsize = atoi (optarg);
-	  break;
-#endif /* HAVE_NETLINK */
-	case 'u':
-	  zserv_privs.user = optarg;
-	  break;
-	case 'g':
-	  zserv_privs.group = optarg;
-	  break;
-	case 'v':
-	  print_version (progname);
-	  exit (0);
-	  break;
-	case 'h':
-	  usage (progname, 0);
-	  break;
-	default:
-	  usage (progname, 1);
-	  break;
-	}
-    }
-
   /* Make master thread emulator. */
   zebrad.master = thread_master_create ();
 
@@ -314,17 +235,24 @@ main (int argc, char **argv)
 
   /* Vty related initialize. */
   signal_init (zebrad.master, Q_SIGC(zebra_signals), zebra_signals);
+#if 0
+  /*
+   * All CLI command registrations commented out 
+   */
   cmd_init (1);
   vty_init (zebrad.master);
   memory_init ();
+  zebra_init ();
+  zebra_if_init ();
+  zebra_vty_init ();
+  /* Sort VTY commands. */
+  sort_node ();
+#endif
 
   /* Zebra related initialize. */
-  zebra_init ();
   rib_init ();
-  zebra_if_init ();
   zebra_debug_init ();
   router_id_init();
-  zebra_vty_init ();
   access_list_init ();
   prefix_list_init ();
   rtadv_init ();
@@ -335,13 +263,16 @@ main (int argc, char **argv)
   /* For debug purpose. */
   /* SET_FLAG (zebra_debug_event, ZEBRA_DEBUG_EVENT); */
 
+#if 0
+  /*
+   * The Kernel FIB Interface is no longer needed
+   */
   /* Make kernel routing socket. */
   kernel_init ();
   interface_list ();
   route_read ();
+#endif
 
-  /* Sort VTY commands. */
-  sort_node ();
 
 #ifdef HAVE_SNMP
   zebra_snmp_init ();
@@ -367,6 +298,7 @@ main (int argc, char **argv)
   if (batch_mode)
     exit (0);
 
+#if 0
   /* Daemonize. */
   if (daemon_mode && daemon (0, 0) < 0)
     {
@@ -376,6 +308,7 @@ main (int argc, char **argv)
 
   /* Output pid of zebra. */
   pid_output (pid_file);
+#endif
 
   /* After we have successfully acquired the pidfile, we can be sure
   *  about being the only copy of zebra process, which is submitting
@@ -388,6 +321,7 @@ main (int argc, char **argv)
   if (! keep_kernel_mode)
     rib_sweep_route ();
 
+#if 0
   /* Needed for BSD routing socket. */
   pid = getpid ();
 
@@ -396,6 +330,7 @@ main (int argc, char **argv)
 
   /* Make vty server socket. */
   vty_serv_sock (vty_addr, vty_port, ZEBRA_VTYSH_PATH);
+#endif
 
   /* Print banner. */
   zlog_notice ("Zebra %s starting: vty@%d", QUAGGA_VERSION, vty_port);
