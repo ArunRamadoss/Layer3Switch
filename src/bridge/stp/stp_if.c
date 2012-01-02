@@ -151,11 +151,14 @@ void stp_change_bridge_id(struct stp_instance *br, const char *addr)
 		stp_become_root_bridge(br);
 }
 
-void stp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
+int stp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
 {
         struct stp_port_entry  *p = NULL;
 	struct stp_instance *br = get_this_bridge_entry (vlan_id);
         int wasroot;
+
+	if (!br)
+		return -1;
 
         wasroot = stp_is_root_bridge(br);
 
@@ -172,6 +175,8 @@ void stp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
         stp_port_state_selection(br);
         if (stp_is_root_bridge(br) && !wasroot)
                 stp_become_root_bridge(br);
+
+	return 0;
 }
 
 int stp_set_bridge_hello_time (int hello , uint16_t vlan_id)
@@ -257,6 +262,39 @@ int stp_set_bridge_max_age (int max_age , uint16_t vlan_id)
 	return 0;
 }
 
+int stp_set_bridge_times (int fdly, int maxage, int htime, uint16_t vlan_id)
+{
+        struct stp_instance *br = get_this_bridge_entry (vlan_id);
+
+        if (!br)
+        {
+                printf("Spanning tree not enabled\n");
+                return -1;
+        }
+
+	if (htime < 0)
+		htime = br->bridge_hello_time;
+	if (fdly < 0)
+		fdly = br->bridge_forward_delay;
+	if (maxage < 0)
+		maxage = br->bridge_max_age;
+
+	if (bridge_timer_relation (fdly, maxage, htime))
+		return -1;
+
+	br->bridge_forward_delay = fdly;
+	br->bridge_max_age = maxage;
+	br->bridge_hello_time = htime;
+
+	if (stp_is_root_bridge(br)) {
+		br->max_age = maxage;
+		br->forward_delay = fdly;	
+		br->hello_time = htime;
+	}
+
+	return 0;
+}
+
 void stp_set_port_priority (struct stp_port_entry *p, uint8_t newprio)
 {
         uint16_t new_port_id ;
@@ -281,9 +319,6 @@ void stp_set_port_priority (struct stp_port_entry *p, uint8_t newprio)
 
 void stp_set_path_cost(struct stp_port_entry *p, uint32_t path_cost)
 {
-        if (!p)
-                return;
-                
         p->path_cost = path_cost;
         stp_configuration_update(p->br);
         stp_port_state_selection(p->br);

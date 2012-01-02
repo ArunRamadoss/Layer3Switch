@@ -108,6 +108,14 @@ cparser_result_t cparser_cmd_config_exit(cparser_context_t *context)
 	return CPARSER_NOT_OK;
 }
 
+
+cparser_result_t cparser_cmd_show_mac_address_table(cparser_context_t *context)
+{
+	if (!show_mac_table ())
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+
 static cparser_result_t
 cparser_cmd_enter_privileged_mode (cparser_t *parser, char *buf, int buf_size)
 {

@@ -10,20 +10,59 @@ show users
 //Displays the CPU usage of the task
 show task-cpu
 
+//Display MAC table
+show mac-address-table
+
+//shows Spanning Tree
+show spanning-tree
+
+//Displays interface
+show interface
+
 // Enable privileged mode
 enable privileged-mode
 
 //configuration mode
 configure terminal
+
 #submode "config"
+
 //Add new user 
 user add <STRING:username> <STRING:password> <INT:level>
+
 //Deletes user
 user del <STRING:username>
+
 //Changes to the exec mode
 end
+
 //Exit from the current mode
 exit
+
+//Enables Spanning Tree
+spanning-tree
+
+//Disables Spanning Tree
+no spanning-tree
+
+//Sets Spanning Priority <0-65535>
+spanning-tree priority <INT:priority>
+
+//Sets Spanning Hello time <1-10 secs>
+spanning-tree hello-time <INT:htimesecs> { forward-delay <INT:fdlysecs> } { max-age <INT:maxagesecs> }
+
+//Sets Spanning foward delay  <4-30 secs>
+spanning-tree forward-delay <INT:fdlysecs> { max-age <INT:maxagesecs> } { hello-time <INT:htimesecs> }
+
+//Sets Spanning max age <6-40 secs>
+spanning-tree max-age <INT:maxagesecs> { forward-delay <INT:fdlysecs> } { hello-time <INT:htimesecs> }
+
+//Sets Spanning ports path cost <0 – 200000000>
+spanning-tree ethernet <INT:portnum> path-cost <INT:cost>
+
+//Sets Spanning port priority <0 – 255>
+spanning-tree ethernet <INT:portnum> priority <INT:priority>
+
 #endsubmode
 
 //Changes to the exec mode
@@ -31,6 +70,23 @@ end
 
 //Exit from the current mode
 exit
+
+//Interface mode
+interface ethernet <INT:portnum>
+
+#submode "if"
+
+//Enables the port
+enable
+
+//Disable the port
+disable
+
+//Exit from the mode
+exit
+
+
+#endsubmode
 
 // Disable privileged mode
 + disable privileged-mode

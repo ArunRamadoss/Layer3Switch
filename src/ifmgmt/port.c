@@ -33,8 +33,6 @@ int port_init (void)
 		port_cdb[idx].pstp_info = NULL;
 		read_port_mac_address (idx, &port_cdb[idx].ifPhysAddress); 
 	}
-	port_cli_cmds_init ();
-
 	return 0;
 }
 

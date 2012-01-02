@@ -9,7 +9,6 @@ struct list_head  stp_instance_head;
 /*****************************************************/
 int stp_init (void);
 static int stp_init_res (void);
-int stp_cli_init_cmd (void);
 int stp_create_stp_instance (uint16_t vlan_id, struct stp_instance **p);
 int stp_delete_stp_instance (struct stp_instance *p);
 int  stp_create_port (struct stp_instance *stp_inst, int port);
@@ -27,9 +26,6 @@ int is_dest_stp_group_address (MACADDRESS mac);
 static int stp_init_res (void)
 {
 	INIT_LIST_HEAD (&stp_instance_head);
-
-	stp_cli_init_cmd ();
-
 	return 0;
 }
 

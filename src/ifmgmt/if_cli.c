@@ -1,30 +1,83 @@
 #include "common_types.h"
 #include "cli.h"
 #include "ifmgmt.h"
+#include "cparser.h"
 
-extern int change_to_interface_mode (char **);
-
-void cli_set_port_enable (void *arg[])
+cparser_result_t cparser_cmd_if_enable(cparser_context_t *context)
 {
-	int port = cli_get_port ();
-	(void)arg;
-	port_cdb[port - 1].ifAdminStatus = IF_UP;
-	port_cdb[port - 1].ifOperStatus = IF_UP;
+	if (!cli_set_port_enable ())
+                return CPARSER_OK;
+        return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_if_disable(cparser_context_t *context)
+{
+	if (!cli_set_port_disable ())
+                return CPARSER_OK;
+        return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_config_interface_ethernet_portnum(cparser_context_t *context,
+    int32_t *portnum_ptr)
+{
+	char prompt[CPARSER_MAX_PROMPT];
+	/* Enter the submode */
+        cli_set_port (*portnum_ptr);
+        sprintf (prompt, "%s%d%s","(config-if-", *portnum_ptr, ")");
+        set_prompt (prompt);
+	get_prompt (prompt);
+        set_curr_mode (INTERFACE_MODE);
+	return cparser_submode_enter(context->parser, NULL, prompt);
 
-	send_interface_enable_or_disable (port, IF_UP);
 }
 
-void cli_set_port_disable (void *arg[])
+cparser_result_t cparser_cmd_if_exit(cparser_context_t *context)
+{
+	if (!exit_mode ())
+	{
+		return cparser_submode_exit (context->parser);
+	}
+	return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_interface_ethernet_portnum(cparser_context_t *context,  int32_t *portnum_ptr)
+{
+	char prompt[CPARSER_MAX_PROMPT];
+	/* Enter the submode */
+        cli_set_port (*portnum_ptr);
+        sprintf (prompt, "%s%d%s","(config-if-", *portnum_ptr, ")");
+        set_prompt (prompt);
+	get_prompt (prompt);
+        set_curr_mode (INTERFACE_MODE);
+	return cparser_submode_enter(context->parser, NULL, prompt);
+
+}
+
+cparser_result_t cparser_cmd_show_interface(cparser_context_t *context)
+{
+	if (!cli_show_interfaces (-1))
+                return CPARSER_OK;
+        return CPARSER_NOT_OK;
+}
+
+void cli_set_port_enable (void)
 {
 	int port = cli_get_port ();
-	(void)arg;
+	port_cdb[port - 1].ifAdminStatus = IF_UP;
+	port_cdb[port - 1].ifOperStatus = IF_UP;
+	send_interface_enable_or_disable (port, IF_UP);
+	return 0;
+}
+
+void cli_set_port_disable (void)
+{
+	int port = cli_get_port ();
 	port_cdb[port - 1].ifAdminStatus = IF_DOWN;
 	port_cdb[port - 1].ifOperStatus = IF_DOWN;
 
 	send_interface_enable_or_disable (port, IF_DOWN);
+
+	return 0;
 }
 
-void cli_show_interfaces (void *arg[])
+int cli_show_interfaces (int port)
 {
 	int idx = -1;
 
@@ -38,20 +91,4 @@ void cli_show_interfaces (void *arg[])
 		port_cdb[idx].ifMtu, "ETH", state[port_cdb[idx].ifAdminStatus],
 		state[port_cdb[idx].ifOperStatus], port_cdb[idx].ifLastChange);
 	}
-}
-
-void port_cli_cmds_init (void)
-{
-#if 0
-	install_cmd_handler ("interface ethernet <port>", "Interface mode",change_to_interface_mode , 
-                             "interface ethernet <INT>", GLOBAL_CONFIG_MODE);
-
-	install_cmd_handler ("disable", "Disables the port", 
-   			      cli_set_port_disable, NULL, INTERFACE_MODE);
-
-	install_cmd_handler ("enable", "Enables the port", 
-   			      cli_set_port_enable, NULL, INTERFACE_MODE);
-	install_cmd_handler ("show interface", "Displays interface", 
-   			      cli_show_interfaces, NULL, USER_EXEC_MODE);
-#endif
 }

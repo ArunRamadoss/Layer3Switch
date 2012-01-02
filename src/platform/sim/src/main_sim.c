@@ -56,7 +56,7 @@ int main (int argc, char **argv)
 
 	tmlib_init ();
 
-	cli_init ("Switch");
+	cli_init ("OpenSwitch");
 
 	spawn_pkt_processing_task ();
 

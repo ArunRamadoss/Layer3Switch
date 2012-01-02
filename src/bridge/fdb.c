@@ -28,7 +28,7 @@ int fdb_mac_hash(unsigned char *mac);
 static int fdb_delete_entry (MACADDRESS mac, int32_t portno);
 static int fdb_add_entry (MACADDRESS mac, int32_t portno, int is_static);
 static fdb_t * fdb_lookup (MACADDRESS mac, int32_t port_no);
-void show_mac_table (char *[]);
+int show_mac_table (void);
 int fdb_init (void); 
 int mac_address_update (MACADDRESS , int32_t , uint16_t );
 int stp_is_mac_learning_allowed (int);
@@ -71,9 +71,6 @@ int fdb_init (void)
 	fdb_salt = (uint32_t) times (NULL);
 
 	setup_timer (&ageing_timer, aging_timer_expired, NULL);
-
-        install_cmd_handler ("show mac-address-table", "display MAC table", show_mac_table, NULL, 
-			     USER_EXEC_MODE);
 
 	mod_timer (ageing_timer, tbridge.dot1dTpAgingTime);
 
@@ -184,7 +181,7 @@ void display_fdb_entry (void *data)
 
 }
 
-void show_mac_table (char *unused[])
+int show_mac_table (void)
 {
 	printf ("  %-6s   %-10s         %-10s   %-10s\n",
 	        "port", "mac address", "type", "aging(secs)");
@@ -193,4 +190,6 @@ void show_mac_table (char *unused[])
 	hash_walk (fdb_hash_table, display_fdb_entry); 
 
 	printf ("Mac Entries Dropped: %d\n", tbridge.dot1dTpLearnedEntryDiscards);
+	
+	return 0;
 }
