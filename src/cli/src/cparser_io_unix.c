@@ -44,6 +44,9 @@
 #define CTRL_E (5)
 #define CTRL_N (14)
 #define CTRL_P (16)
+#define IS_HELP_CHAR(c)   (c == '?')
+#define IS_BACK_SPACE(c)  (c == 0x7f)
+#define IS_TAB(c)         (c == '\t')
 
 /**
  * \brief    Enable/disable canonical mode.
@@ -117,7 +120,10 @@ cparser_unix_getch (cparser_t *parser, int *ch, cparser_char_t *type)
                (*ch == parser->cfg.ch_help) ||
                (*ch == parser->cfg.ch_complete)) {
         *type = CPARSER_CHAR_REGULAR;
-    }
+    } else if (IS_BACK_SPACE(*ch)) {
+        *ch = parser->cfg.ch_erase;
+	*type = CPARSER_CHAR_REGULAR;
+   }
 }
 
 static void
