@@ -22,6 +22,9 @@ show rstp
 //Displays interface
 show interface
 
+//Displays IP Information
+show ip interface
+
 // Enable privileged mode
 enable privileged-mode
 
@@ -115,6 +118,10 @@ enable
 
 //Disable the port
 disable
+
+//Configures IP address on Interface
+ip address <IPV4ADDR:addr> <IPV4ADDR:mask>
+
 
 //Exit from the mode
 exit

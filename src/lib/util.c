@@ -27,7 +27,7 @@ uint32_t ip_2_uint32 (uint8_t *ipaddress, int byte_order)
 void uint32_2_ipstring (uint32_t ipAddress, uint8_t *addr)
 {
 	int i = 0;
-	for (i=0; i<4; i++) {
+	for (i=0; i < 4; i++) {
 		addr[i] = (ipAddress >> (i * 8) ) & 0xFF;
 	}
 }

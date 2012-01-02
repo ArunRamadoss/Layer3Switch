@@ -164,12 +164,14 @@ int write_input_on_screen(char c)
 {
 	write(gfd,&c,1);
 	fflush (stdout);
+	return 0;
 }
 
 void write_string (const char *str)
 {
 	write (gfd, str, strlen(str));
 	fflush (stdout);
+	return 0;
 }
 
 
@@ -194,6 +196,7 @@ int get_curr_mode ()
 int set_curr_mode (int mode)
 {
 	this_cli[this_session].current_mode = mode;
+	return 0;
 }
 
 void set_curr_priv_level (int level)
@@ -286,6 +289,7 @@ int change_vlan_mode (char **args)
 	sprintf (prmpt, "%s%d%s","(config-vlan-",vlan_id, ")");
 	set_prompt (prmpt);
 	set_curr_mode (VLAN_CONFIG_MODE);
+	return 0;
 }
 
 int change_to_interface_mode (char **args)
@@ -303,18 +307,21 @@ int change_to_interface_mode (char **args)
 	sprintf (prmpt, "%s%d%s","(config-if-",port, ")");
 	set_prompt (prmpt);
 	set_curr_mode (INTERFACE_MODE);
+	return 0;
 }
 
 int change_config_mode (char **args)
 {
 	set_prompt ("(config)");
 	set_curr_mode (GLOBAL_CONFIG_MODE);
+	return 0;
 }
 
 int end_mode (char **args)
 {
 	set_prompt ("");
 	set_curr_mode (USER_EXEC_MODE);
+	return 0;
 }
 
 int exit_mode ()

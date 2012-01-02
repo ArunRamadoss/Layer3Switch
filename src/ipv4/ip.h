@@ -16,3 +16,5 @@ struct ip_addr_entry {
 
 
 extern struct ip_addr_entry ip_port[];
+
+int set_ip_address (uint32_t ifindex, uint32_t ipaddress, uint32_t ipmask);

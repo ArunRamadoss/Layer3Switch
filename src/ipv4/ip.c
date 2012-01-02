@@ -11,9 +11,12 @@
 #include "common_types.h"
 #include "ip.h"
 
+int ip_init (void);
+int init_ip_interface_table (void);
+
 struct ip_addr_entry ip_port[MAX_PORTS];
 
-int init_ip_interface_table ()
+int init_ip_interface_table (void)
 {
 	int i = 0;
 
@@ -32,6 +35,4 @@ int init_ip_interface_table ()
 int ip_init (void)
 {
 	init_ip_interface_table ();
-
-	ipv4_cli_init ();
 }
