@@ -1,0 +1,27 @@
+#!/bin/sh
+
+export CODE_DIR=$PWD
+export FINAL_OBJ=$PWD/build/obj/
+export PLATFORM_EXE=linux
+
+if [ "$1" = "" ]; then
+	echo "Building Layer3 switch for linux"
+	make -C ./build 2>Err_log
+else
+	echo "Cleaning Linux Lib"
+	make $1 -C ./build 
+	rm -f Err_log
+	rm -f ./build/Switch.exe
+	rm -f ./Switch.exe
+fi
+if [ $? = 0 ]; then
+	if [ "$1" = "" ]; then
+		cp -f ./build/Switch.exe ./
+		sync
+		echo "Sucessfully Built Image : Switch.exe"
+	else
+		echo "Sucessfully clean"
+	fi
+else
+	echo "Build Failure"
+fi
