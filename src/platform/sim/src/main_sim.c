@@ -82,7 +82,7 @@ int main (int argc, char **argv)
 	return 0;
 }
 
-int read_port_mac_address (int port, char *p) 
+int read_port_mac_address (int port, uint8_t *p) 
 {
 	int i = 0;
 	while (i < 5) {

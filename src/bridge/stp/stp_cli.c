@@ -1,6 +1,7 @@
 #include "stp_info.h"
 #include "cli.h"
 #include "cparser.h"
+#include "cparser_tree.h"
 
 /******************************************************/
 int spanning_tree_enable (void);
@@ -247,15 +248,16 @@ int  show_spanning_tree  (void)
 			printf (" VLAN  : %d\n\n", pstp_inst->vlan_id);
 		}
 	}
+	return 0;
 }
 
 int spanning_tree_enable (void)
 {
-	vlan_spanning_tree_enable_on_vlan (cli_get_vlan_id (), MODE_STP);
+	return vlan_spanning_tree_enable_on_vlan (cli_get_vlan_id (), MODE_STP);
 }
 int spanning_tree_disable (void)
 {
-	vlan_spanning_tree_disable_on_vlan (cli_get_vlan_id (), MODE_STP);
+	return vlan_spanning_tree_disable_on_vlan (cli_get_vlan_id (), MODE_STP);
 }
 int set_spanning_bridge_port_path_cost (uint32_t path_cost, uint32_t portnum)
 {

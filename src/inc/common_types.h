@@ -247,7 +247,7 @@ int get_port_mac_address (uint32_t port, uint8_t *mac);
 int  compare_ether_addr(const uint8_t *addr1, const uint8_t *addr2);
 int get_port_oper_state (uint32_t port);
 inline int bridge_timer_relation (int fdelay, int max_age, int hello);
-int read_port_mac_address (int port, char *p);
+int read_port_mac_address (int port, uint8_t *p);
 
 #include "libproto.h"
 #endif

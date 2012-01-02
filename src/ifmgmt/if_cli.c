@@ -2,6 +2,12 @@
 #include "cli.h"
 #include "ifmgmt.h"
 #include "cparser.h"
+#include "cparser_tree.h"
+
+int  cli_set_port_enable (void);
+int cli_show_interfaces (int port);
+int  cli_set_port_disable (void);
+void send_interface_enable_or_disable (int port , int state);
 
 cparser_result_t cparser_cmd_if_enable(cparser_context_t *context)
 {
@@ -15,6 +21,7 @@ cparser_result_t cparser_cmd_if_disable(cparser_context_t *context)
                 return CPARSER_OK;
         return CPARSER_NOT_OK;
 }
+#if 0
 cparser_result_t cparser_cmd_config_interface_ethernet_portnum(cparser_context_t *context,
     int32_t *portnum_ptr)
 {
@@ -28,7 +35,7 @@ cparser_result_t cparser_cmd_config_interface_ethernet_portnum(cparser_context_t
 	return cparser_submode_enter(context->parser, NULL, prompt);
 
 }
-
+#endif
 cparser_result_t cparser_cmd_if_exit(cparser_context_t *context)
 {
 	if (!exit_mode ())
@@ -57,7 +64,7 @@ cparser_result_t cparser_cmd_show_interface(cparser_context_t *context)
         return CPARSER_NOT_OK;
 }
 
-void cli_set_port_enable (void)
+int  cli_set_port_enable (void)
 {
 	int port = cli_get_port ();
 	port_cdb[port - 1].ifAdminStatus = IF_UP;
@@ -66,7 +73,7 @@ void cli_set_port_enable (void)
 	return 0;
 }
 
-void cli_set_port_disable (void)
+int cli_set_port_disable (void)
 {
 	int port = cli_get_port ();
 	port_cdb[port - 1].ifAdminStatus = IF_DOWN;
@@ -81,7 +88,7 @@ int cli_show_interfaces (int port)
 {
 	int idx = -1;
 
-	char *state[]  = {"UNKNWN", "UP", "DOWN"};
+	const char *state[]  = {"UNKNWN", "UP", "DOWN"};
 
 	printf (" Port    Name     MTU    Type    Admin    Oper   LastChange\n");
 	printf (" ----   -----    -----  ------   ------  -----   ----------\n");
@@ -91,4 +98,6 @@ int cli_show_interfaces (int port)
 		port_cdb[idx].ifMtu, "ETH", state[port_cdb[idx].ifAdminStatus],
 		state[port_cdb[idx].ifOperStatus], port_cdb[idx].ifLastChange);
 	}
+
+	return 0;
 }

@@ -44,7 +44,7 @@ struct cparser_node_ {
     cparser_node_type_t   type;      /**< Token type */ 
     uint32_t              flags;     /**< Flags */
     void                  *param;    /**< Token-dependent parameter */
-    char                  *desc;     /**< A per-node description string */
+    const char                  *desc;     /**< A per-node description string */
     /** Pointer to the next sibling in the same level of the tree */
     cparser_node_t        *sibling;
     /** Pointer to all its children in the next level of the tree */

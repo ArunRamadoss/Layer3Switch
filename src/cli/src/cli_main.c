@@ -201,7 +201,7 @@ void set_curr_priv_level (int level)
 	this_cli[this_session].current_priv_level = level;
 }
 
-int set_prompt (char *prmpt_new)
+int set_prompt (const char *prmpt_new)
 {
 	char gprompt[MAX_PMP_LEN];
 

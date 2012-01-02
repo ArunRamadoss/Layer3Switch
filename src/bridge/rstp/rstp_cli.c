@@ -1,13 +1,17 @@
 #include "cli.h"
 #include "bridgestp.h"
 #include "cparser.h"
+#include "cparser_tree.h"
 
-
+/***********************************************************************/
 int set_spanning_8021w_port_prio (uint32_t prio, int portnum);
 int set_spanning_8021w_port_path_cost (uint32_t path_cost, int portnum);
 int show_spanning_tree_8021w (void);
 int spanning_8021w_tree_enable (void);
 int spanning_8021w_tree_disable (void);
+int vlan_spanning_tree_enable_on_vlan (int vlan_id, int mode);
+int vlan_spanning_tree_disable_on_vlan (int vlan_id, int mode);
+/***********************************************************************/
 
 extern struct list_head bstp_list;
 
@@ -170,7 +174,7 @@ cparser_result_t cparser_cmd_config_spanning_tree_rstp_ethernet_portnum_priority
     int32_t *portnum_ptr,
     int32_t *priority_ptr)
 {
-	if (!set_spanning_bridge_port_prio (*priority_ptr, *portnum_ptr))
+	if (!set_spanning_8021w_port_prio (*priority_ptr, *portnum_ptr))
 		return CPARSER_OK;
 	return CPARSER_NOT_OK;
 }
@@ -249,7 +253,7 @@ int show_spanning_tree_8021w (void)
 			printf ("  VLAN  : %d\n\n", pstp_inst->vlan_id);
 
 			printf ("  Root ID\n\tPriority    %d\n",
-					pstp_inst->bs_root_pv.pv_root_id >> 48);
+					(uint32_t)(pstp_inst->bs_root_pv.pv_root_id >> 48));
 
 			PV2ADDR(pstp_inst->bs_root_pv.pv_root_id, mac);
 
@@ -266,7 +270,7 @@ int show_spanning_tree_8021w (void)
 				 pstp_inst->bs_root_htime, pstp_inst->bs_root_max_age,
 				 pstp_inst->bs_root_fdelay);
 
-			printf ("  Bridge ID\n\tPriority    %d\n", pstp_inst->bs_bridge_pv.pv_root_id >> 48);
+			printf ("  Bridge ID\n\tPriority    %d\n", (uint32_t)(pstp_inst->bs_bridge_pv.pv_root_id >> 48));
 
 			PV2ADDR(pstp_inst->bs_bridge_pv.pv_root_id, mac);
 
@@ -288,9 +292,8 @@ int show_spanning_tree_8021w (void)
 			if (!list_empty(&pstp_inst->bs_bplist))
 			{
 				struct bstp_port *p = NULL;
-				char     *role[] = { "DISABLED", "ROOT", "DESIGNATED",
-					  	     "ALTERNATE", "BACKUP"};
-				char     *state[] = { "DISABLED", "LISTENING", "LEARNING","FORWARDING","BLOCKING","DISCARDING"};
+				const char     *role[] = { "DISABLED", "ROOT", "DESIGNATED","ALTERNATE", "BACKUP"};
+				const char     *state[] = { "DISABLED", "LISTENING", "LEARNING","FORWARDING","BLOCKING","DISCARDING"};
 
 				printf
 				     ("\nPort     Cost       Role        State           Bridge Id    \n");
@@ -360,7 +363,7 @@ int set_spanning_8021w_port_prio (uint32_t prio, int portnum)
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
 	if (!(p = rstp_get_port_entry (pinst, portnum)))
@@ -372,7 +375,7 @@ int set_spanning_8021w_port_prio (uint32_t prio, int portnum)
 	if (prio > BSTP_MAX_PORT_PRIORITY)
 	{
 		printf ("Invaild spanning tree port priority. Valid Range 0-240\n");
-		return;
+		return -1;
 	}
 
 	return bstp_set_port_priority (p, prio);

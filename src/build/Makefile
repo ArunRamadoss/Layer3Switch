@@ -1,6 +1,6 @@
 .PHONY: all all-before all-after clean clean-custom
 
-all: all-before lib BRIDGE STP CLI PORT GDD  RSTP VLAN DHCP IPV4 VRRP UDP LIB PLATFORM SWITCH all-after
+all: all-before lib CLI BRIDGE STP PORT GDD  RSTP VLAN DHCP IPV4 VRRP UDP LIB PLATFORM SWITCH all-after
 
 include make.h
 

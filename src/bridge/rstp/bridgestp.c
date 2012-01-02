@@ -1509,8 +1509,7 @@ bstp_set_port_priority(struct bstp_port *bp, int pri)
 	return (0);
 }
 
-int
-bstp_set_path_cost(struct bstp_port *bp, uint32_t path_cost)
+int bstp_set_path_cost(struct bstp_port *bp, uint32_t path_cost)
 {
 	struct bstp_state *bs = bp->bp_bs;
 

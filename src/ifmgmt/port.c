@@ -31,7 +31,7 @@ int port_init (void)
 		port_cdb[idx].ifOutDiscards = 0;
 		port_cdb[idx].ifOutErrors = 0;
 		port_cdb[idx].pstp_info = NULL;
-		read_port_mac_address (idx, &port_cdb[idx].ifPhysAddress); 
+		read_port_mac_address (idx, &port_cdb[idx].ifPhysAddress.addr[0]); 
 	}
 	return 0;
 }
