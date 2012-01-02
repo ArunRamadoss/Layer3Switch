@@ -2264,17 +2264,17 @@ struct bstp_state * rstp_get_this_bridge_entry (uint16_t vlan_id)
 	return NULL;
 }
 
-void rstp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
+int rstp_set_bridge_priority (uint16_t newprio, uint16_t vlan_id)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
 
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
-	bstp_set_priority (pinst, newprio);
+	return bstp_set_priority (pinst, newprio);
 }
 
 inline int bridge_timer_relation (int fdelay, int max_age, int hello)
@@ -2292,44 +2292,75 @@ inline int bridge_timer_relation (int fdelay, int max_age, int hello)
 	}
 	return 0;
 }
-void rstp_set_bridge_hello_time (uint32_t hello, uint16_t vlan_id)
+int rstp_set_bridge_hello_time (uint32_t hello, uint16_t vlan_id)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
 
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
 	if (!bridge_timer_relation (pinst->bs_bridge_fdelay, pinst->bs_bridge_max_age, hello))
-		bstp_set_htime (pinst, hello);
+		return bstp_set_htime (pinst, hello);
+	return -1;
 }
 
-void rstp_set_bridge_fdly (uint32_t fdly, uint16_t vlan_id)
+int rstp_set_bridge_fdly (uint32_t fdly, uint16_t vlan_id)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
 
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
 	if (!bridge_timer_relation (fdly, pinst->bs_bridge_max_age, pinst->bs_bridge_htime))
-		bstp_set_fdelay (pinst, fdly);
+		return bstp_set_fdelay (pinst, fdly);
+	return -1;
 }
 
-void rstp_set_bridge_max_age (uint32_t max_age, uint16_t vlan_id)
+int rstp_set_bridge_max_age (uint32_t max_age, uint16_t vlan_id)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (vlan_id);
 
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
 	if (!bridge_timer_relation (pinst->bs_bridge_fdelay, max_age, pinst->bs_bridge_htime))
-		bstp_set_maxage (pinst, max_age);
+		return bstp_set_maxage (pinst, max_age);
+	return -1;
+}
+int rstp_set_bridge_times (int fdly, int maxage, int htime, uint16_t vlan_id)
+{
+	struct bstp_state *bs =  rstp_get_this_bridge_entry (vlan_id);
+
+        if (!bs)
+        {
+                printf("Rapid Spanning tree not enabled\n");
+                return -1;
+        }
+
+	if (htime < 0)
+		htime = bs->bs_bridge_htime;
+	if (fdly < 0)
+		fdly = bs->bs_bridge_fdelay;
+	if (maxage < 0)
+		maxage = bs->bs_bridge_max_age;
+
+	if (bridge_timer_relation (fdly, maxage, htime))
+		return -1;
+
+	bs->bs_bridge_max_age = maxage;
+	bs->bs_bridge_fdelay = fdly;
+	bs->bs_bridge_htime = htime;
+
+	bstp_reinit(bs);
+
+	return 0;
 }

@@ -1,10 +1,238 @@
 #include "cli.h"
 #include "bridgestp.h"
+#include "cparser.h"
+
+
+int set_spanning_8021w_port_prio (uint32_t prio, int portnum);
+int set_spanning_8021w_port_path_cost (uint32_t path_cost, int portnum);
+int show_spanning_tree_8021w (void);
+int spanning_8021w_tree_enable (void);
+int spanning_8021w_tree_disable (void);
 
 extern struct list_head bstp_list;
 
-void
-show_spanning_tree_8021w (void)
+cparser_result_t cparser_cmd_show_rstp(cparser_context_t *context)
+{
+	if (!show_spanning_tree_8021w ())
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_config_spanning_tree_rstp (cparser_context_t *context)
+{
+	if (!spanning_8021w_tree_enable ())
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_priority_priority(cparser_context_t *context, int32_t *priority_ptr)
+{
+	if (!rstp_set_bridge_priority (*priority_ptr, cli_get_vlan_id ()))
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_hello_time_htimesecs_forward_delay_fdlysecs_max_age_maxagesecs (
+    cparser_context_t *context,
+    int32_t *htimesecs_ptr,
+    int32_t *fdlysecs_ptr,
+    int32_t *maxagesecs_ptr)
+{
+	if (!fdlysecs_ptr && !maxagesecs_ptr) 
+	{
+		if (!rstp_set_bridge_hello_time (*htimesecs_ptr, cli_get_vlan_id ()))
+			return CPARSER_OK;
+		return CPARSER_NOT_OK;
+	}
+
+        if (*htimesecs_ptr < BSTP_MIN_HELLO_TIME || *htimesecs_ptr > BSTP_MAX_HELLO_TIME)
+        {
+                printf ("Invaild Rapid Spanning tree Hello time. Valid range %d-%d\n",
+                        BSTP_MIN_HELLO_TIME, BSTP_MAX_HELLO_TIME);
+		return CPARSER_NOT_OK;
+        }
+
+	if (fdlysecs_ptr) {
+		if (*fdlysecs_ptr < BSTP_MIN_FORWARD_DELAY || *fdlysecs_ptr > BSTP_MAX_FORWARD_DELAY) {
+			printf ("Invaild Rapid Spanning tree Forward Delay. Valid range %d-%d\n",
+				BSTP_MIN_FORWARD_DELAY, BSTP_MAX_FORWARD_DELAY);
+			return CPARSER_NOT_OK;
+		}
+	}
+	
+	if (maxagesecs_ptr) {
+		if (*maxagesecs_ptr < BSTP_MIN_MAX_AGE || *maxagesecs_ptr > BSTP_MAX_MAX_AGE) {
+			printf ("Invaild Rapid Spanning tree max age. Valid range %d-%d\n",
+				BSTP_MIN_MAX_AGE, BSTP_MAX_MAX_AGE);
+			return CPARSER_NOT_OK;
+		}
+	}
+
+	if (!rstp_set_bridge_times ((fdlysecs_ptr? *fdlysecs_ptr : -1), (maxagesecs_ptr? *maxagesecs_ptr : -1),
+				  (htimesecs_ptr? *htimesecs_ptr : -1), cli_get_vlan_id()))
+		return CPARSER_NOT_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_forward_delay_fdlysecs_max_age_maxagesecs_hello_time_htimesecs(
+    cparser_context_t *context,
+    int32_t *fdlysecs_ptr,
+    int32_t *maxagesecs_ptr,
+    int32_t *htimesecs_ptr)
+{
+	if (!htimesecs_ptr && !maxagesecs_ptr) 
+	{
+		if (!rstp_set_bridge_fdly (*fdlysecs_ptr, cli_get_vlan_id ()))
+			return CPARSER_OK;
+		return CPARSER_NOT_OK;
+	}
+
+	if (*fdlysecs_ptr < BSTP_MIN_FORWARD_DELAY || *fdlysecs_ptr > BSTP_MAX_FORWARD_DELAY) {
+		printf ("Invaild Rapid Spanning tree Forward Delay. Valid range %d-%d\n",
+			BSTP_MIN_FORWARD_DELAY, BSTP_MAX_FORWARD_DELAY);
+		return CPARSER_NOT_OK;
+	}
+
+
+	if (htimesecs_ptr) {
+		if (*htimesecs_ptr < BSTP_MIN_HELLO_TIME || *htimesecs_ptr > BSTP_MAX_HELLO_TIME)
+		{
+			printf ("Invaild Rapid Spanning tree Hello time. Valid range %d-%d\n",
+					BSTP_MIN_HELLO_TIME, BSTP_MAX_HELLO_TIME);
+			return CPARSER_NOT_OK;
+		}
+	}
+
+	
+	if (maxagesecs_ptr) {
+		if (*maxagesecs_ptr < BSTP_MIN_MAX_AGE || *maxagesecs_ptr > BSTP_MAX_MAX_AGE) {
+			printf ("Invaild Rapid Spanning tree max age. Valid range %d-%d\n",
+				BSTP_MIN_MAX_AGE, BSTP_MAX_MAX_AGE);
+			return CPARSER_NOT_OK;
+		}
+	}
+
+	if (!rstp_set_bridge_times ((fdlysecs_ptr? *fdlysecs_ptr : -1), (maxagesecs_ptr? *maxagesecs_ptr : -1),
+				  (htimesecs_ptr? *htimesecs_ptr : -1), cli_get_vlan_id()))
+		return CPARSER_NOT_OK;
+	return CPARSER_NOT_OK;
+}
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_max_age_maxagesecs_forward_delay_fdlysecs_hello_time_htimesecs(
+    cparser_context_t *context,
+    int32_t *maxagesecs_ptr,
+    int32_t *fdlysecs_ptr,
+    int32_t *htimesecs_ptr)
+{
+        if (!fdlysecs_ptr && !htimesecs_ptr)
+        {
+                if (!rstp_set_bridge_max_age (*maxagesecs_ptr, cli_get_vlan_id ()))
+                        return CPARSER_OK;
+                return CPARSER_NOT_OK;
+        }
+
+	if (*maxagesecs_ptr < BSTP_MIN_MAX_AGE || *maxagesecs_ptr > BSTP_MAX_MAX_AGE)         {
+		printf ("Invaild Rapid Spanning tree max age. Valid range %d-%d\n",
+				BSTP_MIN_MAX_AGE, BSTP_MAX_MAX_AGE);
+		return CPARSER_NOT_OK;
+	}
+
+        if (fdlysecs_ptr) {
+                if (*fdlysecs_ptr < BSTP_MIN_FORWARD_DELAY || *fdlysecs_ptr > BSTP_MAX_FORWARD_DELAY) {
+                        printf ("Invaild Rapid Spanning tree Forward Delay. Valid range %d-%d\n",
+                                BSTP_MIN_FORWARD_DELAY, BSTP_MAX_FORWARD_DELAY);
+                        return CPARSER_NOT_OK;
+                }
+        }
+
+        if (htimesecs_ptr) {
+                if (*htimesecs_ptr < BSTP_MIN_HELLO_TIME || *htimesecs_ptr > BSTP_MAX_HELLO_TIME)
+                {
+                        printf ("Invaild Rapid Spanning tree Hello time. Valid range %d-%d\n",
+                                        BSTP_MIN_HELLO_TIME, BSTP_MAX_HELLO_TIME);
+                        return CPARSER_NOT_OK;
+                }
+        }
+
+	if (!rstp_set_bridge_times ((fdlysecs_ptr? *fdlysecs_ptr : -1), (maxagesecs_ptr? *maxagesecs_ptr : -1),
+				  (htimesecs_ptr? *htimesecs_ptr : -1), cli_get_vlan_id()))
+		return CPARSER_NOT_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_ethernet_portnum_path_cost_cost(cparser_context_t *context,
+    int32_t *portnum_ptr,
+    int32_t *cost_ptr)
+{
+	if (!set_spanning_8021w_port_path_cost (*cost_ptr, *portnum_ptr))
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_ethernet_portnum_priority_priority(cparser_context_t *context,
+    int32_t *portnum_ptr,
+    int32_t *priority_ptr)
+{
+	if (!set_spanning_bridge_port_prio (*priority_ptr, *portnum_ptr))
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_no_spanning_tree_rstp(cparser_context_t *context)
+{
+	if (!spanning_8021w_tree_disable ())
+		return CPARSER_OK;
+	return CPARSER_NOT_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_ethernet_portnum_admin_edge_port(cparser_context_t *context,
+    int32_t *portnum_ptr)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return CPARSER_NOT_OK;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, *portnum_ptr)))
+	{
+		printf ("Invalid Port Number\n");
+		return CPARSER_NOT_OK;
+	}
+
+	if (bstp_set_edge (p, 1))
+		return CPARSER_NOT_OK;
+
+	return CPARSER_OK;
+}
+
+cparser_result_t cparser_cmd_config_spanning_tree_rstp_ethernet_portnum_admin_pt2pt(cparser_context_t *context,
+    int32_t *portnum_ptr)
+{
+	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
+	struct bstp_port *p = NULL;
+
+	if (!pinst)
+	{
+		printf ("Rapid spanning not enabled\n");
+		return CPARSER_NOT_OK;
+	}
+
+	if (!(p = rstp_get_port_entry (pinst, *portnum_ptr)))
+	{
+		printf ("Invalid Port Number\n");
+		return CPARSER_NOT_OK;
+	}
+
+	if (bstp_set_ptp (p, 1))
+		return CPARSER_NOT_OK;
+
+	return CPARSER_OK;
+}
+
+
+
+int show_spanning_tree_8021w (void)
 {
 	struct bstp_state             *pstp_inst = NULL;
 
@@ -83,84 +311,51 @@ show_spanning_tree_8021w (void)
 			printf (" VLAN  : %d\n\n", pstp_inst->vlan_id);
 		}
 	}
+
+	return 0;
 }
 
-void
-spanning_8021w_tree_enable (void)
+int spanning_8021w_tree_enable (void)
 {
-    vlan_spanning_tree_enable_on_vlan (cli_get_vlan_id (), MODE_RSTP);
+    return vlan_spanning_tree_enable_on_vlan (cli_get_vlan_id (), MODE_RSTP);
 }
 
-void
-spanning_8021w_tree_disable (void)
+int  spanning_8021w_tree_disable (void)
 {
-    vlan_spanning_tree_disable_on_vlan (cli_get_vlan_id (), MODE_RSTP);
+    return  vlan_spanning_tree_disable_on_vlan (cli_get_vlan_id (), MODE_RSTP);
 }
 
-void
-set_spanning_8021w_bridge_priority (char *args[])
-{
-    uint16_t            prio = (uint16_t) atoi (args[0]);
-
-    rstp_set_bridge_priority (prio,cli_get_vlan_id ());
-}
-
-void
-set_spanning_8021w_bridge_hello_time (char *args[])
-{
-    int                 hello = atoi (args[0]);
-
-    rstp_set_bridge_hello_time (hello, cli_get_vlan_id ());
-}
-
-void
-set_spanning_8021w_bridge_fwd_delay (char *args[])
-{
-    int                 fdly = atoi (args[0]);
-
-    rstp_set_bridge_fdly (fdly, cli_get_vlan_id ());
-}
-
-void
-set_spanning_8021w_bridge_max_age (char *args[])
-{
-    int                 max_age = atoi (args[0]);
-
-    rstp_set_bridge_max_age (max_age, cli_get_vlan_id ());
-}
-
-void set_spanning_8021w_port_path_cost (char *args[])
+int set_spanning_8021w_port_path_cost (uint32_t path_cost, int portnum)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
 	struct bstp_port *p = NULL;
-	uint32_t path_cost = atoi (args[1]);
 
 	if (!pinst)
 	{
 		printf ("Rapid spanning not enabled\n");
-		return;
+		return -1;
 	}
 
-	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	if (!(p = rstp_get_port_entry (pinst, portnum)))
 	{
 		printf ("Invalid Port Number\n");
+		return -1;
 	}
 
 	if (path_cost > BSTP_MAX_PATH_COST)
 	{
 		printf ("Invaild Rapid spanning tree port path-cost. Valid range 0-%d\n", 
 			BSTP_MAX_PATH_COST);
-		return;
+		return -1;
 	}
 
-	bstp_set_path_cost (p, path_cost);
+	return bstp_set_path_cost (p, path_cost);
 }
 
-void set_spanning_8021w_port_prio (char *args[])
+int set_spanning_8021w_port_prio (uint32_t prio, int portnum)
 {
 	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
 	struct bstp_port *p = NULL;
-	uint32_t prio = atoi (args[1]);
 
 	if (!pinst)
 	{
@@ -168,9 +363,10 @@ void set_spanning_8021w_port_prio (char *args[])
 		return;
 	}
 
-	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
+	if (!(p = rstp_get_port_entry (pinst, portnum)))
 	{
 		printf ("Invalid Port Number\n");
+		return -1;
 	}
 
 	if (prio > BSTP_MAX_PORT_PRIORITY)
@@ -179,105 +375,5 @@ void set_spanning_8021w_port_prio (char *args[])
 		return;
 	}
 
-	bstp_set_port_priority (p, prio);
-}
-
-
-void set_spanning_8021w_port_admin_edge (char *args[])
-{
-	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
-	struct bstp_port *p = NULL;
-
-	if (!pinst)
-	{
-		printf ("Rapid spanning not enabled\n");
-		return;
-	}
-
-	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
-	{
-		printf ("Invalid Port Number\n");
-	}
-
-	bstp_set_edge (p, 1);
-}
-
-void set_spanning_8021w_port_admin_p2p (char *args[])
-{
-	struct bstp_state *pinst =  rstp_get_this_bridge_entry (cli_get_vlan_id ());
-	struct bstp_port *p = NULL;
-
-	if (!pinst)
-	{
-		printf ("Rapid spanning not enabled\n");
-		return;
-	}
-
-	if (!(p = rstp_get_port_entry (pinst, atoi (args[0]))))
-	{
-		printf ("Invalid Port Number\n");
-	}
-
-	bstp_set_ptp (p, 1);
-}
-
-
-
-int
-rstp_cli_init_cmd ()
-{
-    install_cmd_handler ("spanning-tree rstp", "Enables Rapid Spanning Tree",
-                         spanning_8021w_tree_enable, NULL,
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("no spanning-tree rstp", "Disables Rapid Spanning Tree",
-                         spanning_8021w_tree_disable, NULL,
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp priority <prio>",
-                         "Sets Rapid Spanning Priority <0-65535>",
-                         set_spanning_8021w_bridge_priority,
-                         "spanning-tree rstp priority <INT>",
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp hello-time <secs>",
-                         "Sets Rapid Spanning Hello time <1-10 secs>",
-                         set_spanning_8021w_bridge_hello_time,
-                         "spanning-tree rstp hello-time <INT>",
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp forward-delay <secs>",
-                         "Sets Rapid Spanning forward delay <4-30 secs>",
-                         set_spanning_8021w_bridge_fwd_delay,
-                         "spanning-tree rstp forward-delay <INT>",
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp max-age <secs>",
-                         "Sets Rapid Spanning max age <6-40 secs>",
-                         set_spanning_8021w_bridge_max_age,
-                         "spanning-tree rstp max-age <INT>",
-                         GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp ethernet <port> path-cost <cost>", 
-                         "Sets Rapid Spanning ports path cost <0 – 200000000>", 
-                          set_spanning_8021w_port_path_cost, "spanning-tree rstp ethernet <INT> path-cost <INT>", 
-			  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp ethernet <port> priority <prio>", 
-                         "Sets Rapid Spanning port priority <0 – 255>", 
-                          set_spanning_8021w_port_prio, "spanning-tree rstp ethernet <INT> priority <INT>", 
- 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp ethernet <port> admin-edge-port", 
-                         "Sets Rapid Spanning port as edge port", 
-                          set_spanning_8021w_port_admin_edge, "spanning-tree rstp ethernet <INT> admin-edge-port", 
- 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("spanning-tree rstp ethernet <port> admin-pt2pt", 
-                         "Sets Rapid Spanning port link as point 2 point", 
-                          set_spanning_8021w_port_admin_p2p, "spanning-tree rstp ethernet <INT> admin-pt2pt", 
- 	                  GLOBAL_CONFIG_MODE | VLAN_CONFIG_MODE);
-
-    install_cmd_handler ("show rstp", "shows rstp Spanning Tree",
-                         show_spanning_tree_8021w, NULL, USER_EXEC_MODE);
+	return bstp_set_port_priority (p, prio);
 }

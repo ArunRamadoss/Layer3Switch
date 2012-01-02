@@ -16,6 +16,9 @@ show mac-address-table
 //shows Spanning Tree
 show spanning-tree
 
+//shows Rapid spanning Tree
+show rstp 
+
 //Displays interface
 show interface
 
@@ -62,6 +65,37 @@ spanning-tree ethernet <INT:portnum> path-cost <INT:cost>
 
 //Sets Spanning port priority <0 – 255>
 spanning-tree ethernet <INT:portnum> priority <INT:priority>
+
+//Enables Rapid Spanning Tree
+spanning-tree rstp
+
+//Disables Rapid Spanning Tree
+no spanning-tree rstp
+
+//Sets Rapid Spanning Priority <0-65535>
+spanning-tree rstp priority <INT:priority>
+
+//Sets Rapid Spanning Hello time <1-10 secs>
+spanning-tree rstp hello-time <INT:htimesecs> { forward-delay <INT:fdlysecs> } { max-age <INT:maxagesecs> }
+
+//Sets Rapid Spanning foward delay  <4-30 secs>
+spanning-tree rstp forward-delay <INT:fdlysecs> { max-age <INT:maxagesecs> } { hello-time <INT:htimesecs> }
+
+//Sets Rapid Spanning max age <6-40 secs>
+spanning-tree rstp max-age <INT:maxagesecs> { forward-delay <INT:fdlysecs> } { hello-time <INT:htimesecs> }
+
+//Sets Rapid Spanning ports path cost <0 – 200000000>
+spanning-tree rstp ethernet <INT:portnum> path-cost <INT:cost>
+
+//Sets Rapid Spanning port priority <0 – 255>
+spanning-tree rstp ethernet <INT:portnum> priority <INT:priority>
+
+//Sets Rapid Spanning port as edge port
+spanning-tree rstp ethernet <INT:portnum> admin-edge-port
+
+//Sets Rapid Spanning port link as point 2 point
+spanning-tree rstp ethernet <INT:portnum> admin-pt2pt
+
 
 #endsubmode
 
